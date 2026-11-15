@@ -22,6 +22,21 @@ Die Web-App ist responsive für Smartphone, Tablet und Präsentationsbildschirm.
 - Admin-Ansicht: Runde aktivieren, Abstimmung öffnen/schließen, Ergebnisse einblenden und groß präsentieren
 - Wiederholung der identischen Einstiegsfrage am Ende
 
+## Dashboard 2.0 – Ansichten für den Beamer
+
+Nach dem Admin-Login stehen vier große Arbeitsbereiche bereit:
+
+1. **Live-Dashboard:** aktive Frage öffnen, Stimmen annehmen, ausblenden oder freigeben, Live-Ergebnisse ansehen.
+2. **Fragenübersicht:** alle sieben Runden als große Fragekacheln oder kompakte Liste; Runden lassen sich direkt starten.
+3. **Alle Ergebnisse:** sieben Fragen nebeneinander als vollständiger Auswertungsüberblick (mit Stimmenzahlen).
+4. **Vorher / Nachher:** identische Eröffnungs- und Schlussfrage mit vergleichbaren Verteilungen sowie einer aggregierten Veränderungskennzahl.
+
+Für jede Ergebnisauswertung sind **Balken, Kreis, Kacheln und Tabelle** wählbar. Der Button **Präsentieren** öffnet ein großformatiges Beamer-Dashboard mit separaten Ansichten „Aktuelle Frage“, „Alle Fragen“ und „Vorher/Nachher“, Navigation durch die Fragen sowie optionalem Browser-Vollbild.
+
+Teilnehmer-Fragen wurden ebenfalls vergrößert. Bei Fixgehalt und Bonus erscheinen die Antwortoptionen auf großen, responsiven Auswahlkarten.
+
+Hinweise: Bei Benefits handelt es sich um Mehrfachauswahl – Kreisdiagramme zeigen Anteile an allen gewählten Benefits, Balken/Karten dagegen Anteile an den abstimmenden Geräten. Der Vorher/Nachher-Vergleich ist **aggregiert** und nicht personengenau.
+
 ## Admin
 
 Mit dem Admin-Button oben rechts öffnen. Das Passwort wird **serverseitig** als bcrypt-Hash geprüft, nicht im öffentlichen Code gespeichert. Aus Sicherheitsgründen gibt es in diesem öffentlichen Repository kein Admin-Passwort. Zugangsdaten liegen beim Projektverantwortlichen.
