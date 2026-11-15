@@ -247,6 +247,10 @@ button, .choice, .benefit { -webkit-tap-highlight-color:transparent; }
       padding-right:max(var(--phone-gutter),env(safe-area-inset-right));
       padding-bottom:max(56px,env(safe-area-inset-bottom));
     }
+    .topbar {
+      padding-left:max(var(--phone-gutter),env(safe-area-inset-left));
+      padding-right:max(var(--phone-gutter),env(safe-area-inset-right));
+    }
     .presentation {
       padding-left:max(var(--phone-gutter),env(safe-area-inset-left));
       padding-right:max(var(--phone-gutter),env(safe-area-inset-right));
