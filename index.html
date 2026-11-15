@@ -6,6 +6,7 @@
 <title>NXT | Vergütung & Benefits – Live Experience</title>
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
 <div class="glow glow-a"></div><div class="glow glow-b"></div>
@@ -48,15 +49,115 @@
   <div class="hello-line"><div><span class="eyebrow">NXT · DOZENTENANSICHT</span><h2>Session <span class="accent">Control.</span></h2></div><button class="ghost" id="backFromAdmin">← Zurück</button></div>
   <div id="adminLogin" class="glass admin-login"><div class="overline">GESCHÜTZTER ZUGANG</div><h2>Administrator</h2><p>Hier steuerst du, welche Runde geöffnet ist, ob neue Stimmen angenommen werden und wann das Publikum die Ergebnisse sieht.</p><form id="adminForm"><label for="adminPassword">PASSWORT</label><input type="password" id="adminPassword" required autocomplete="off" placeholder="Admin-Passwort"><button class="primary full" type="submit">Anmelden ↗</button></form></div>
   <div id="adminContent" class="hidden">
-   <div class="admin-metrics"><div class="glass metric"><span>TEILNEHMENDE MIT STIMME</span><strong id="participantsCount">0</strong></div><div class="glass metric"><span>AKTIVE RUNDE</span><strong id="adminActive">—</strong></div><div class="glass metric"><span>STIMMEN AKTIV</span><strong id="roundVotes">0</strong></div></div>
-   <div class="admin-grid"><div class="glass admin-card"><div class="overline">RUNDE STEUERN</div><h3>Was läuft gerade?</h3><div id="adminRounds" class="admin-rounds"></div><div class="admin-actions"><button class="secondary" id="toggleAccept">Abstimmung schließen</button><button class="primary" id="toggleReveal">Ergebnisse anzeigen</button></div><p class="micro">Ein Rundenwechsel blendet die Ergebnisse wieder aus und öffnet die neue Runde.</p></div>
-   <div class="glass admin-card"><div class="overline">LIVE AUSWERTUNG</div><h3>Ergebnisse</h3><div id="adminChart" class="results-chart"></div><button class="ghost small" id="refreshAdmin">Aktualisieren ↻</button><button class="ghost small" id="resetRound">Runde zurücksetzen</button><p class="micro">Im Präsentationsmodus lassen sich dieselben Ergebnisse vergrößert anzeigen.</p><button class="ghost small" id="fullscreenResults">Ergebnisse präsentieren ↗</button><div id="beforeAfter" class="compare-results"></div></div></div>
-   <div class="glass admin-card" style="margin-top:18px"><div class="overline">SESSION-HINWEISE</div><p>Eine Browser-ID ist keine fälschungssichere Personenidentität: Privates Fenster, neuer Browser oder gelöschter Speicher erzeugen eine neue Kennung. Die Abstimmungen sind für den Unterricht konzipiert.</p><button class="ghost small" id="adminLogout">Abmelden</button></div>
+    <div class="console-topline">
+      <div><span class="overline">WORKSPACE · INTERAKTIVE LEHRE</span><p class="micro" style="margin:4px 0">Live auswerten, einzelne Fragen zeigen und die Entwicklung der Antworten vergleichen.</p></div>
+      <nav class="console-tabs" id="workspaceTabs" role="tablist" aria-label="Dashboard-Bereiche">
+        <button class="console-tab" data-workspace="live" role="tab" aria-selected="true">◉ Live-Dashboard</button>
+        <button class="console-tab" data-workspace="questions" role="tab" aria-selected="false">▦ Fragenübersicht</button>
+        <button class="console-tab" data-workspace="all" role="tab" aria-selected="false">▤ Alle Ergebnisse</button>
+        <button class="console-tab" data-workspace="compare" role="tab" aria-selected="false">↔ Vorher / Nachher</button>
+      </nav>
+    </div>
+    <div class="admin-metrics dashboard-metrics">
+      <div class="glass metric"><span>TEILNEHMENDE MIT STIMME</span><strong id="participantsCount">0</strong></div>
+      <div class="glass metric"><span>AKTIVE RUNDE</span><strong id="adminActive">—</strong></div>
+      <div class="glass metric"><span>STIMMEN AKTIV</span><strong id="roundVotes">0</strong></div>
+      <div class="glass metric"><span>ALLE ABGEGEBENEN STIMMEN</span><strong id="totalVotes">0</strong></div>
+    </div>
+    <section class="dashboard-workspace" id="workspace-live" aria-label="Live-Dashboard">
+      <div class="admin-grid console-grid">
+        <div class="glass admin-card">
+          <div class="overline">SPIELSTEUERUNG</div><h3>Welche Frage läuft?</h3>
+          <div id="adminRounds" class="admin-rounds"></div>
+          <div class="admin-actions">
+            <button class="secondary" id="toggleAccept" type="button">Abstimmung schließen</button>
+            <button class="primary" id="toggleReveal" type="button">Ergebnisse anzeigen</button>
+          </div>
+          <p class="micro">Rundenwechsel öffnet die nächste Frage und verbirgt zunächst die Ergebnisse.</p>
+        </div>
+        <div class="glass admin-card console-analytics">
+          <div class="console-card-header">
+            <div><span class="overline">LIVE AUSWERTUNG</span><h3 id="currentDashboardTitle">Ergebnisse der aktuellen Runde</h3></div>
+            <button class="primary" id="fullscreenResults" type="button">Präsentieren ↗</button>
+          </div>
+          <div class="dashboard-statline" id="liveStatistics"></div>
+          <div class="dashboard-toolbar-row">
+            <span class="overline">ANSICHT WECHSELN</span>
+            <div class="display-switch" id="adminViewModes" aria-label="Ergebnisdarstellung">
+              <button class="display-button" data-chart-view="bars" aria-pressed="true">▤ Balken</button>
+              <button class="display-button" data-chart-view="donut" aria-pressed="false">◉ Kreis</button>
+              <button class="display-button" data-chart-view="cards" aria-pressed="false">▦ Kacheln</button>
+              <button class="display-button" data-chart-view="table" aria-pressed="false">≡ Tabelle</button>
+            </div>
+          </div>
+          <div id="adminChart" class="dashboard-chart" aria-live="polite"></div>
+          <div id="beforeAfter" class="hidden"></div>
+          <div class="dashboard-toolbar-row" style="margin-top:25px">
+            <button class="ghost small" id="refreshAdmin" type="button">Aktualisieren ↻</button>
+            <button class="ghost small" id="resetRound" type="button">Runde zurücksetzen</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="dashboard-workspace hidden" id="workspace-questions" aria-label="Fragenübersicht">
+      <div class="dashboard-toolbar-row">
+        <div><span class="overline">ALLE SPIELRUNDEN</span><h2 style="margin:6px 0 0;font-family:Space Grotesk,sans-serif">Fragen-Dashboard</h2></div>
+        <div class="display-switch" id="questionGalleryModes">
+          <button class="display-button" data-gallery="tiles" aria-pressed="true">▦ Große Kacheln</button>
+          <button class="display-button" data-gallery="list" aria-pressed="false">≡ Liste</button>
+        </div>
+      </div>
+      <div id="allRoundCards" class="quiz-gallery"></div>
+    </section>
+    <section class="dashboard-workspace hidden" id="workspace-all" aria-label="Alle Ergebnisse">
+      <div class="dashboard-toolbar-row">
+        <div><span class="overline">GESAMTÜBERBLICK</span><h2 style="margin:6px 0 0;font-family:Space Grotesk,sans-serif">Alle Fragen auf einen Blick</h2></div>
+        <button class="ghost" type="button" id="presentAllResults">Groß anzeigen ↗</button>
+      </div>
+      <div id="allRoundResults" class="master-dashboard"></div>
+    </section>
+    <section class="dashboard-workspace hidden" id="workspace-compare" aria-label="Vorher-Nachher-Vergleich">
+      <div class="dashboard-toolbar-row">
+        <div><span class="overline">WIRKUNG DER LEHRVERANSTALTUNG</span><h2 style="margin:6px 0 0;font-family:Space Grotesk,sans-serif">Hat sich die Meinung verändert?</h2></div>
+        <button class="ghost" type="button" id="presentComparison">Vergleich präsentieren ↗</button>
+      </div>
+      <div id="comparisonDashboard"></div>
+    </section>
+    <div class="glass admin-card" style="margin-top:20px">
+      <div class="overline">SESSION-HINWEISE</div>
+      <p>Eine browserbezogene Geräte-ID verhindert versehentliche Doppelstimmen innerhalb einer Runde. Sie erkennt keine echte Person: neue Browser oder privater Modus können weitere IDs erzeugen. Ergebnisse werden aggregiert angezeigt.</p>
+      <button class="ghost small" id="adminLogout" type="button">Admin abmelden</button>
+    </div>
   </div>
 </section>
 </main>
 <div id="toast" role="status" aria-live="polite" class="toast hidden"></div>
-<div class="modal-backdrop hidden" id="presentationModal"><div class="presentation"><div class="presentation-head"><div><div class="eyebrow">NXT · LIVE</div><h2 id="presentationTitle">Ergebnisse</h2></div><button class="ghost" id="closePresentation">Schließen ×</button></div><div id="presentationResults"></div></div></div>
+<div class="modal-backdrop hidden" id="presentationModal" role="dialog" aria-modal="true" aria-label="NXT Präsentations-Dashboard">
+  <div class="presentation">
+    <div class="presentation-head">
+      <div><div class="eyebrow">NXT · PRÄSENTATIONSMODUS</div><h2 id="presentationTitle">Live-Ergebnisse</h2></div>
+      <div class="topright">
+        <button class="ghost small" id="browserFullscreen" type="button">⛶ Vollbild</button>
+        <button class="ghost" id="closePresentation" type="button">Schließen ×</button>
+      </div>
+    </div>
+    <div class="presentation-actions">
+      <div id="presentTabs" class="present-tabs" role="tablist" aria-label="Präsentationsansichten">
+        <button class="present-tab" data-present="round" aria-selected="true">Aktuelle Frage</button>
+        <button class="present-tab" data-present="all" aria-selected="false">Alle Fragen</button>
+        <button class="present-tab" data-present="compare" aria-selected="false">Vorher / Nachher</button>
+      </div>
+      <div class="display-switch" id="presentModeButtons">
+        <button class="display-button" data-present-chart="bars" aria-pressed="true">Balken</button>
+        <button class="display-button" data-present-chart="donut" aria-pressed="false">Kreis</button>
+        <button class="display-button" data-present-chart="cards" aria-pressed="false">Kacheln</button>
+        <button class="display-button" data-present-chart="table" aria-pressed="false">Tabelle</button>
+      </div>
+    </div>
+    <div class="presentation-screen" id="presentationResults" aria-live="polite"></div>
+  </div>
+</div>
 <footer><span>© NXT · REUTLINGEN UNIVERSITY</span><span>PERSONALMANAGEMENT & ARBEITSRECHT · THEMA 6</span></footer>
+<script src="dashboard.js" defer></script>
 <script src="app.js" defer></script>
 </body></html>
