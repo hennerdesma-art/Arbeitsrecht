@@ -7,6 +7,8 @@ Interaktive NXT-Lehrveranstaltung für **Thema 6: Vergütung und Benefits** an d
 Nach Aktivierung von GitHub Pages unter **Settings → Pages → Build and deployment → GitHub Actions**:
 https://hennerdesma-art.github.io/Arbeitsrecht/
 
+**Einmalige Freischaltung:** Unter Settings → Pages → Build and deployment muss als Quelle „GitHub Actions“ aktiviert werden. Ohne diesen Schritt schlägt der initiale Deploy-Workflow bei „Configure Pages“ fehl.
+
 Die Web-App ist responsive für Smartphone, Tablet und Präsentationsbildschirm.
 
 ## Was funktioniert?
@@ -29,7 +31,7 @@ Mit dem Admin-Button oben rechts öffnen. Das Passwort wird **serverseitig** als
 - Hosting: GitHub Pages, statische HTML/CSS/JS
 - Backend: **getrennte arb_-Tabellen im vorhandenen Supabase-Projekt NXT Netzwerkforschung**
 - Datenbanktabellen: arb_session, arb_votes, arb_admin_auth
-- Nur genau definierte RPC-Aufrufe dürfen aus dem Browser angesprochen werden: arb_status, arb_vote, arb_admin_status, arb_admin_results, arb_admin_control
+- Nur genau definierte RPC-Aufrufe dürfen aus dem Browser angesprochen werden: arb_status, arb_vote, arb_voted_rounds, arb_admin_status, arb_admin_results, arb_admin_control, arb_admin_reset
 - RLS für alle drei Tabellen aktiviert; direkter Tabellenzugriff für anon/authenticated entzogen
 - Das für die Website verwendete Publishable API Key ist keine geheime Berechtigung. Serverseitige Berechtigungsregeln schützen die Daten.
 
