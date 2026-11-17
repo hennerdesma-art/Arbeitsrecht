@@ -94,4 +94,39 @@ assert.match(css,/\.pr-twist-result-question/,"Two separate answer distributions
  assert.equal(ctx.pr.dualChoice.q1,"C","First answer must be retained");
 }
 
+
+// Chapter 5: show the live result immediately after own submission, never the legal key before moderator reveal.
+assert.match(code,/step\.chapter===5&&\(step\.kind==='choice'\|\|step\.kind==='dual_choice'\)&&hasAnswered/,"Post-vote chart limited to the three chapter 5 Twists");
+assert.match(code,/step\.kind!=='dual_choice'\|\|\(step\.myAnswer\?\.q1&&step\.myAnswer\?\.q2\)/,"Twist 3 chart only after both answers are saved");
+assert.match(code,/const revealed=step\.phase==="revealed"&&step\.solution!==null/,"Legal answer stays under admin reveal control");
+assert.match(code,/if\(revealed\)html\+=prLegalSolution\(step\)/,"Correct answer displayed only after moderator reveal");
+assert.match(code,/pr\.public=await prRpc\("arb_pr_public",\{p_device:pr\.device\}\);prShowParticipant\(\)/,"Refresh the results immediately after submission");
+assert.match(css,/\.pr-twist-feedback/,"Use existing NXT card styling for live twist results");
+{
+ const begin=code.indexOf("function prTwistLiveFeedbackHTML(step){");
+ const end=code.indexOf("function prInstantFeedbackHTML(step){",begin);
+ assert.ok(begin>=0&&end>begin,"Dedicated post-vote Twist dashboard missing");
+ const cx={
+  pr:{public:{participants:5}},prStats:(k,v)=>"<p>"+k+":"+v+"</p>",
+  prEscape:v=>String(v),prResultRows:()=>"<div>LIVE_DIAGRAM</div>",
+  prButton:()=>"ANSWER_CHANGE",prLegalSolution:()=>"LEGAL_SECRET"
+ };
+ vm.createContext(cx);
+ vm.runInContext(code.slice(begin,end),cx);
+ const step1={kind:"choice",phase:"voting",myAnswer:{value:"B"},responses:[{answer:{value:"B"}}],solution:null,context:{options:[]}};
+ const waiting=cx.prTwistLiveFeedbackHTML(step1);
+ assert.ok(waiting.includes("LIVE_DIAGRAM"),"Twist 1 should show a chart");
+ assert.ok(waiting.includes("ANSWER_CHANGE"),"Answers can be edited while voting is open");
+ assert.ok(waiting.includes("Auflösung bleibt vorerst verborgen"),"Waiting message is shown");
+ assert.ok(!waiting.includes("LEGAL_SECRET"),"Legal key must not be leaked");
+ const step3={kind:"dual_choice",phase:"results",myAnswer:{q1:"C",q2:"D"},responses:[{answer:{q1:"C",q2:"D"}}],solution:null,
+  context:{questions:[{id:"q1"},{id:"q2"}]}};
+ const two=cx.prTwistLiveFeedbackHTML(step3);
+ assert.ok(two.includes("Frage 1:")&&two.includes("Frage 2:"),"Both Twist 3 answers shown together");
+ assert.ok(two.includes("LIVE_DIAGRAM")&&!two.includes("LEGAL_SECRET"),"Twist 3 chart shown without solution");
+ step3.phase="revealed";step3.solution={correct:{q1:"C",q2:"D"}};
+ const released=cx.prTwistLiveFeedbackHTML(step3);
+ assert.ok(released.includes("LEGAL_SECRET"),"Both correct answers become available after manual reveal");
+}
+
 console.log("Presentation static checks passed (six chapters, NXT design, RPC, salary and benefits).");
