@@ -1,3 +1,22 @@
+# NEU: Zentral gesteuerte Präsentation mit sechs Kapiteln (17.11.2026)
+
+**Einstieg:** https://hennerdesma-art.github.io/Arbeitsrecht/presentation.html
+
+Die bestehende Arbeitsrecht-Anwendung und der bisherige Workshop bleiben erhalten. Die neue Präsentationsoberfläche bietet die Kapitel **Einleitung**, **Rechtssicherheit**, **Fixgehalt**, **Gerechtigkeit**, **Variable Vergütung** und **Benefits** mit eigener Kapitel-Freigabe durch die Moderation. Der neue Admin-Bereich verwendet dasselbe geschützte Passwort wie bisher.
+
+- **Admin-Steuerung:** Kapitel öffnen, Frage starten, Abstimmung schließen, zunächst Ergebnisse anzeigen, danach Auflösung freigeben, Kapitel-Ergebnisse veröffentlichen, neue Demo- oder Live-Session erstellen.
+- **Teilnehmer:** Synchrones, mobiloptimiertes Durchgehen der Fragen, persönliche Antwortkorrektur vor Abstimmungsschluss, bereits freigegebene Auswertung des aktuellen Kapitels.
+- **Ebene 1+2:** Alle 12 bestehenden Aufgaben aus dem Workshop übernommen.
+- **Ebene 3+4:** Ein erster Fall zu Equal Pay bzw. Mitbestimmung des Betriebsrats als vorbereiteter Einstieg; weitere Inhalte können ergänzt werden.
+- **Ebene 5:** Persona-basierter Benefit-Konfigurator für Lena (50 €), Murat (100 €), Sabine (100 €), Jonas (100 €); neun Benefits, optional 10–100 € Barauszahlung in 10-€-Schritten. Serverseitige Budgetprüfung und Fünf-Minuten-Frist, anschließend Rechts-Twists zu Zusätzlichkeit, Teilzeit und Rücknahme.
+- **Analytics:** Live-Ergebnisverteilungen, anonymisierte Antwortzahlen pro Kapitel und Gehaltsstatistik, geeignet für die Beameransicht.
+- **Supabase:** Zusätzliche isolierte Tabellen mit Präfix `arb_pr_`; RLS aktiviert; direkter Datenbankzugriff für anonyme Nutzer gesperrt. Nur kontrollierte RPC-Funktionen. Das bestehende NXT-Netzwerkforschungsprojekt wurde nicht strukturell verändert, die bisherigen Workshopdaten bleiben erhalten.
+- **Design:** Original-NXT-Petrol, Türkis, Typografie und Logo. Teilnehmeransicht mobile-first, Admin-Dashboard mit großformatiger Ergebnispräsentation.
+
+**Hinweis:** Die neue Sitzung startet mit einer Demo-Session ohne Stimmen. Für die Lehrveranstaltung im Admin-Bereich eine eigene Live-Session anlegen. Nutzer dürfen Pseudonyme wählen. Die Browserkennung ist nicht manipulationssicher.
+
+---
+
 ## Neu: Ebene 1 + 2 als vollständiger Workshop (November 2026)
 
 **Spielseite:** https://hennerdesma-art.github.io/Arbeitsrecht/workshop.html
