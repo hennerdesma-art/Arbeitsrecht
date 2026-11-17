@@ -1,3 +1,65 @@
+## Neu: Ebene 1 + 2 als vollständiger Workshop (November 2026)
+
+**Spielseite:** https://hennerdesma-art.github.io/Arbeitsrecht/workshop.html
+
+Die bestehenden sieben Spiele bleiben auf der Startseite erhalten. Die neue Seite ist über die Einstiegsseite verlinkt.
+
+### Die Aufgaben
+
+- **01 | HR-Rechtscheck:** sechs anspruchsvolle Richtig/Falsch-Fragen zu Orientierungspraktikum (§ 22 MiLoG), Minijob und Mindestlohn (§ 1 MiLoG, MiLoV5), Feiertag (§ 2 EntgFG), Wartezeit, Wiedererkrankung (§ 3 EntgFG) und eAU (§ 5 EntgFG).
+- **02 | Du bist der Gehaltsmanager:** drei individuelle Gehaltsentscheidungen (Junior Business Analyst, Projektmanagerin, tarifliche Vergütung), danach drei Richtig/Falsch-Fragen zu mündlichem Arbeitsvertrag (§§ 611a, 612 BGB), Fälligkeit (§ 614 BGB) und Entgeltabrechnung (§ 108 GewO).
+
+Die Gehaltsfragen nutzen Touch-Slider, Schritt-Tasten und direkte Zahleneingabe. Eine gültige Antwort kann bis zur Schließung ersetzt werden, ohne die Anzahl der Stimmen zu erhöhen.
+
+### Moderation
+
+Öffne auf der neuen Spielseite **Admin** mit dem bereits vorhandenen Admin-Passwort. Unter **Spielsteuerung** kann die Moderation:
+
+- Eine neue Live- oder Demo-Session anlegen bzw. die Session wechseln
+- Fragen aus Ebene 1 oder 2 direkt starten und überspringen
+- Abstimmungen schließen und Lösungen nachträglich freigeben
+- Die anonyme Verteilung optional ohne Antwortschlüssel einblenden
+- Eine Session abschließen und Demo-Session-Daten nach Bestätigung zurücksetzen
+- Aggregierte Ergebnisse als CSV exportieren und ein Beamer-Dashboard öffnen
+
+Die Lösungen werden **ausschließlich aus der gesperrten Datenbank** abgerufen und den Teilnehmenden erst bei \`revealed\` angezeigt. Im öffentlichen Repository befinden sich keine Antwortschlüssel.
+
+### Dashboard
+
+- **Executive:** Teilnehmerzahl, aktive Geräte (60-Sekunden-Fenster), Stimmen, Beteiligungsquote, Fortschritt
+- **Rechtssicherheit:** je Frage Antwortverteilungen, Korrektheitsquoten nach Freigabe, Fehlerklassifikation, Heatmap nach Rechtsgebiet, schwierigste Fälle
+- **Fixgehalt:** Histogramme, Mittelwert, Median, Minimum/Maximum, Quartile, Gehaltsbänder mit Entscheidungen, Tarifgrenze und rechtliche Bewertung
+- **Vergleich:** Rechtsfragen der beiden Ebenen mit getrennten Stichproben; Gehaltswerte nicht künstlich als richtig/falsch klassifizieren
+- **Live-Präsentation:** großformatige aktuelle Frage und bereits aufgelöste Ergebnisse
+
+**Statistikhinweis:** Anwesenheit bezieht sich auf verbundene Browser innerhalb von 60 Sekunden, nicht auf verifizierte Personen. Bei Gehaltsfragen 1 und 2 ist eine Abweichung vom HR-Empfehlungsbereich nicht automatisch rechtswidrig. Fall 3 berücksichtigt dagegen eine tarifliche Mindestgrenze.
+
+### Technische Umsetzung
+
+- Wiederverwendung der bestehenden Browser-ID (\`nxt_device\`), Namen (\`nxt_name\`), Supabase-Verbindung und Passwortprüfung
+- Bestehende Tabelle \`arb_votes\` um Sitzung/Frage/letzte Änderung ergänzt; Unique-Index auf \`(workshop_session,question_id,device_id)\`
+- Isolierte Tabellen: \`arb_ws_sessions\`, \`arb_ws_questions\`, \`arb_ws_session_questions\`, \`arb_ws_participants\`, \`arb_ws_control\`
+- Serverseitig validierte RPC-Aufrufe \`arb_ws_join\`, \`arb_ws_public\`, \`arb_ws_submit\`, \`arb_ws_admin\`
+- RLS aktiviert, direkte Tabellenrechte für öffentliche Rollen entzogen
+- Datenabfrage über 3,5-Sekunden-Aktualisierung (kein zusätzliches Backend)
+- Bisherige Stimmen und Spiele wurden bei der Erweiterung nicht gelöscht
+- Automatische statische Tests: \`node tests/workshop.test.mjs\`; der Pages-Workflow führt sie vor dem Deployment aus
+
+Eine Browser-ID verhindert nur normale Doppelstimmen, nicht absichtliche Mehrfachteilnahmen über andere Browser. Namen dürfen Pseudonyme sein; vor der Lehrveranstaltung über Verarbeitung und Löschung informieren.
+
+### Verbindliche Rechtsquellen
+
+- MiLoG https://www.gesetze-im-internet.de/milog/
+- MiLoV5 https://www.gesetze-im-internet.de/milov5/
+- EntgFG https://www.gesetze-im-internet.de/entgfg/
+- BGB https://www.gesetze-im-internet.de/bgb/
+- TVG https://www.gesetze-im-internet.de/tvg/
+- GewO https://www.gesetze-im-internet.de/gewo/
+- NachwG https://www.gesetze-im-internet.de/nachwg/
+
+Die Fragen bilden didaktisch vereinfachte, bewusst festgelegte Fallannahmen ab. Rechtsstand: November 2026. Bei praktischer Anwendung stets den aktuellen Gesetzestext und ggf. Sonder-/Tarifregelungen prüfen.
+
+
 # NXT | Vergütung & Benefits – Interactive Experience
 
 Interaktive NXT-Lehrveranstaltung für **Thema 6: Vergütung und Benefits** an der Reutlingen University.
