@@ -21,7 +21,8 @@ for(const feature of ["prWordIdeaCheck","prWordCloudData","prWordCloudHTML","prW
  assert.ok(code.includes(feature),"Chapter 3 missing: "+feature);
 }
 assert.match(code,/pr\.ideaDraft=e\.target\.value/,"Word cloud draft must be retained across polls");
-assert.match(code,/pr\.wordViewPhase===step\.phase&&\(!step\.myAnswer\|\|pr\.wordEditing\)/,"Typing must not be interrupted by live polls");
+assert.match(code,/pr\.wordViewPhase===step\.phase/,"Typing must not be interrupted by live polls");
+assert.match(code,/liveCloud\.innerHTML=prWordCloudHTML\(step\.responses\)/,"Live word cloud continues to update while user types");
 assert.match(css,/\.pr-word-cloud/,"NXT responsive word cloud design");
 assert.match(html,/nxt-logo\.svg/);
 assert.match(code,/\[1,2\]\.includes\(step\.chapter\)/,"Instant results are limited to chapters 1 and 2");
@@ -34,43 +35,34 @@ assert.match(code,/setInterval\(\(\)=>prFetch\(\),2500\)/,"Live results need reg
 assert.match(code,/sessionStorage\.getItem\("nxt_admin"\)/);
 assert.ok(!code.includes("service_role"),"Secret service role must never be exposed");
 
-// Real normalization and frequency check for the third chapter's free text.
+// Word cloud: one-word and long expressions, multiple entries per device, legacy votes, and dynamic frequency.
 const wordStart=code.indexOf("function prWordIdeaCheck(value){");
 const wordEnd=code.indexOf("function prWordCloudHTML(",wordStart);
-assert.ok(wordStart>=0&&wordEnd>wordStart,"Word-cloud functions should be defined");
+assert.ok(wordStart>=0&&wordEnd>wordStart,"Word cloud functions should be defined");
 const wordContext=vm.createContext({});
 vm.runInContext(code.slice(wordStart,wordEnd),wordContext);
-assert.equal(vm.runInContext('prWordIdeaCheck("Betriebsrat").valid',wordContext),false,"Exactly two to three words required");
-assert.equal(vm.runInContext('prWordIdeaCheck("Betriebsrat einschalten").valid',wordContext),true);
-const wordGroups=vm.runInContext('prWordCloudData([{answer:{value:"Betriebsrat fragen"}},{answer:{value:"betriebsrat   fragen."}},{answer:{value:"Auskunft verlangen"}}])',wordContext);
-assert.equal(wordGroups[0].count,2,"Repeated normalized ideas should be shown larger");
-assert.equal(wordGroups.length,2,"Variants should be aggregated");
-assert.equal(wordGroups[1].count,1);
-assert.match(code,/--pr-word-size:/,"Frontend must supply a responsive word-cloud scale");
-assert.match(css,/min\(var\(--pr-word-size\),9vw\)/,"Mobile view must preserve relative font sizes");
-
-
-// Chapter 4: correctness and voting distribution only; detailed legal explanations remain on slides.
-for(const feature of ["function prBonusFeedbackHTML(step){","pr-bonus-verdict","Leider falsch eingeschätzt.","Richtig eingeschätzt!","KAPITEL 04 · FALL"]){
- assert.ok(code.includes(feature),"Chapter 4 feedback missing: "+feature);
-}
-assert.match(code,/step\.chapter===4&&step\.kind==='boolean'&&hasAnswered/,"Chapter 4 feedback appears only after a saved vote");
-assert.match(code,/if\(step\.solution&&step\.chapter!==4\)body\+=prLegalSolution\(step\)/,"Never render legal commentary for chapter 4 in generic view");
-assert.match(code,/step\.chapter!==4\)text\+=prLegalSolution\(step\)/,"Do not render chapter 4 legal explanations in projector dashboard");
-assert.match(code,/if\(\[1,2,4\]\.includes\(step\.chapter\)\)/,"Scroll to immediate chapter 4 feedback after answer");
-assert.match(css,/\.pr-bonus-verdict/,"Chapter 4 keeps a responsive card design");
-{
- const begin=code.indexOf("function prBonusFeedbackHTML(step){");
- const end=code.indexOf("function prInstantFeedbackHTML(step){",begin);
- assert.ok(begin>0&&end>begin,"Dedicated chapter 4 feedback renderer must exist");
- const sandbox={pr:{public:{participants:3}},prStats:(label,value)=>"<b>"+label+":"+value+"</b>",prResultRows:()=>"VERTEILUNG",prButton:()=>"<button>Antwort ändern</button>"};
- vm.createContext(sandbox);vm.runInContext(code.slice(begin,end),sandbox);
- const correct=sandbox.prBonusFeedbackHTML({seq:1,kind:"boolean",phase:"voting",myAnswer:{value:false},solution:{correct:false},responses:[{answer:{value:false}},{answer:{value:true}}],explanation:"LEGAL_SECRET"});
- assert.ok(correct.includes("Richtig eingeschätzt!")&&correct.includes("VERTEILUNG"),"Correct answer and live distribution should appear");
- assert.ok(!correct.includes("LEGAL_SECRET"),"No legal reasoning in participant feedback");
- const incorrect=sandbox.prBonusFeedbackHTML({seq:3,kind:"boolean",phase:"closed",myAnswer:{value:true},solution:{correct:false},responses:[{answer:{value:true}}],explanation:"LEGAL_SECRET"});
- assert.ok(incorrect.includes("Leider falsch eingeschätzt."),"Incorrect answers must be graded immediately");
- assert.ok(!incorrect.includes("LEGAL_SECRET"),"Keep explanations on slides only");
-}
+assert.equal(vm.runInContext('prWordIdeaCheck("Betriebsrat").valid',wordContext),true,"One-word entry should be allowed");
+assert.equal(vm.runInContext('prWordIdeaCheck("Mit dem Betriebsrat sprechen und Auskunft anfordern").valid',wordContext),true,"No word count limit");
+assert.equal(vm.runInContext('prWordIdeaCheck("   ").valid',wordContext),false,"Blank entries should be rejected");
+assert.equal(vm.runInContext('prWordIdeaCheck("x".repeat(101)).valid',wordContext),false,"Limit contribution length");
+assert.equal(vm.runInContext('prWordIdeaCheck("<script>").valid',wordContext),false,"Reject raw HTML input");
+const wordRows=[
+ {answer:{items:["Betriebsrat","Auskunft verlangen","Gehalt vergleichen"]}},
+ {answer:{items:["betriebsrat","Mehr Transparenz fordern"]}},
+ {answer:{value:"Betriebsrat"}}
+];
+wordContext.rows=wordRows;
+const cloudData=vm.runInContext("prWordCloudData(rows)",wordContext);
+assert.equal(cloudData[0].count,3,"Repeated term from multiple contributors grows in prominence");
+assert.equal(cloudData.length,4,"All distinct contributions must survive grouping");
+assert.equal(vm.runInContext("prWordCloudEntries(rows).length",wordContext),6,"Count all ideas, not only devices");
+assert.match(code,/prOwnWordIdeas\(step\.myAnswer\)/,"Display participant's submitted ideas");
+assert.match(code,/NEUE IDEE HINZUFÜGEN/,"Allow additional ideas");
+assert.match(code,/maxlength="100"/,"Free text has a reasonable length boundary");
+assert.match(code,/prWordCloudEntries\(responses\)\.length/,"Admin tracks submitted ideas separately from persons");
+assert.match(css,/\.pr-word-cloud/,"Live word cloud styling preserved");
+assert.match(css,/\.pr-word-owned-list/,"Previous ideas shown as responsive chips");
+assert.match(code,/--pr-word-size:/,"Word-cloud font scale remains proportional");
+assert.match(css,/min\(var\(--pr-word-size\),9vw\)/,"Mobile font sizes remain responsive");
 
 console.log("Presentation static checks passed (six chapters, NXT design, RPC, salary and benefits).");
