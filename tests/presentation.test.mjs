@@ -13,11 +13,14 @@ for(const name of ["arb_pr_join","arb_pr_public","arb_pr_submit","arb_pr_admin",
  assert.ok(code.includes('"'+name+'"'),"Missing Supabase RPC "+name);
 for(const title of ["Einleitung","Rechtssicherheit","Fixgehalt","Gerechtigkeit","Variable Vergütung","Benefits"])
  assert.ok(code.includes(title),"Missing chapter "+title);
-for(const test of ["data-benefit","prBudgetTotal","data-cash","prSalaryUpdate","prRenderDashboard","prAdminAction"])
+for(const test of ["data-benefit","prBudgetTotal","data-cash","prSalaryUpdate","prRenderDashboard","prAdminAction","prLiveSalaryHistogram","prInstantFeedbackHTML","review-edit","hasAnswered","liveReview","pr.reviewEditing"])
  assert.ok(code.includes(test),"Missing interaction "+test);
-for(const design of ["#008b93","#0d2832",".pr-benefit",".pr-dash-card"])
+for(const design of ["#008b93","#0d2832",".pr-benefit",".pr-dash-card",".pr-live-feedback",".pr-live-hist"])
  assert.ok(css.includes(design),"Missing NXT design "+design);
 assert.match(html,/nxt-logo\.svg/);
+assert.match(code,/\[1,2\]\.includes\(step\.chapter\)/,"Instant results are limited to chapters 1 and 2");
+assert.match(code,/step\.myAnswer!==null/,"Require saved vote before showing feedback");
+assert.match(code,/setInterval\(\(\)=>prFetch\(\),2500\)/,"Live results need regular refresh");
 assert.match(code,/sessionStorage\.getItem\("nxt_admin"\)/);
 assert.ok(!code.includes("service_role"),"Secret service role must never be exposed");
 console.log("Presentation static checks passed (six chapters, NXT design, RPC, salary and benefits).");
