@@ -20,7 +20,7 @@ const pr$=id=>document.getElementById(id);
 const pr={
  name:localStorage.getItem("nxt_name")||"",device:localStorage.getItem("nxt_device")||"",
  password:sessionStorage.getItem("nxt_admin")||"",view:"join",public:null,admin:null,clock:null,
- adminChapter:0,adminDashboard:0,busy:false,polling:false,choice:null,salary:null,items:[],cash:0,
+ adminChapter:0,adminDashboard:0,busy:false,polling:false,choice:null,dualChoice:{q1:null,q2:null},salary:null,items:[],cash:0,
  stepId:null,overlay:false,lastError:"",joinedSession:null,reviewEditing:false,wordEditing:false,ideaDraft:""
 };
 if(!pr.device){pr.device=crypto.randomUUID();localStorage.setItem("nxt_device",pr.device)}
@@ -75,6 +75,29 @@ function prBudgetHTML(step,readonly=false){
  txt+='<div class="pr-card pr-small" style="background:#f5fbfa;box-shadow:none"><strong>💶 Barauszahlung</strong><p class="pr-muted">Optional: 10–100 €, nur in 10-€-Schritten und innerhalb des Budgets.</p><div class="pr-salary-input"><button type="button" class="ghost small" data-cash="-10" '+(readonly||pr.cash<=0?'disabled':'')+'>− 10 €</button><strong>'+prEuro(pr.cash)+'</strong><button type="button" class="ghost small" data-cash="10" '+(readonly||pr.cash>=100||remain<10?'disabled':'')+'>+ 10 €</button></div></div>';
  return txt;
 }
+
+/* Chapter 5 / Twist 3: both answers are mandatory and are released together. */
+function prDualChoiceOptions(step){
+ const questions=Array.isArray(step.context?.questions)?step.context.questions:[];
+ return '<div class="pr-twist-double">'+questions.map((question,i)=>{
+  const selected=pr.dualChoice?.[question.id]??null;
+  return '<section class="pr-twist-question" aria-label="'+prEscape(question.title)+'">'+
+   '<div class="pr-twist-question-top"><span class="pr-eyebrow">TEILFRAGE '+(i+1)+' / 2</span><span class="pr-pill">'+(selected?'✓ Beantwortet':'Noch offen')+'</span></div>'+
+   '<h3>'+prEscape(question.title)+'</h3>'+
+   '<div class="pr-optiongrid">'+(question.options||[]).map(option=>'<button type="button" class="pr-option '+(selected===option.value?'selected':'')+
+    '" data-dual-id="'+prEscape(question.id)+'" data-dual-choice="'+prEscape(option.value)+'" '+(step.phase==='voting'?'':'disabled')+
+    ' aria-pressed="'+(selected===option.value)+'"><strong>'+prEscape(option.label)+'</strong></button>').join("")+'</div></section>';
+ }).join("")+'</div><p class="pr-twist-note">Beantworte beide Teilfragen. Die Auflösung erfolgt erst nach der gemeinsamen Abgabe und Freigabe durch die Moderation.</p>';
+}
+function prDualClick(questionId,value){
+ const step=pr.public?.step;
+ if(step?.kind!=='dual_choice'||step.phase!=='voting')return;
+ const subquestion=(step.context?.questions||[]).find(q=>q.id===questionId);
+ if(!subquestion||(subquestion.options||[]).every(o=>o.value!==value))return;
+ pr.dualChoice={...(pr.dualChoice||{}),[questionId]:value};
+ pr.localEdited=true;prShowParticipant();
+}
+
 function prOptions(step){
  const options=step.kind==='boolean'?[{value:true,label:"Richtig"},{value:false,label:"Falsch"}]:(step.context?.options||[]);
  return '<div class="pr-optiongrid">'+options.map((o)=>{
@@ -167,6 +190,13 @@ function prWordParticipantHTML(step,open){
 function prResultRows(step,responses){
  if(!Array.isArray(responses)||!responses.length)return '<p class="pr-note">Noch keine Antworten. Die Werte erscheinen nach Eingang der Stimmen.</p>';
  if(step.kind==="wordcloud")return prWordCloudHTML(responses);
+ if(step.kind==="dual_choice"){
+  return '<div class="pr-twist-results">'+(step.context?.questions||[]).map((sub,i)=>{
+   const options=(sub.options||[]).map(option=>({label:option.label,count:responses.filter(r=>r.answer?.[sub.id]===option.value).length}));
+   return '<div class="pr-twist-result-question"><p class="pr-eyebrow">TEILFRAGE '+(i+1)+' / 2</p><h4>'+prEscape(sub.title)+'</h4>'+
+    prBars(options,responses.length,false)+'</div>';
+  }).join("")+'</div>';
+ }
  if(step.kind==="benefits"){
   const cat=prBudgetItems(step), total=responses.length;
   let choices=cat.map(b=>({label:b.label,count:responses.filter(r=>Array.isArray(r.answer?.items)&&r.answer.items.includes(b.id)).length}));
@@ -268,6 +298,16 @@ function prLegalSolution(step){
  if(!step?.solution)return '';
  const s=step.solution;
  let label="";
+ if(step.kind==='dual_choice'){
+  const sections=(step.context?.questions||[]).map((sub,i)=>{
+   const correct=s.correct?.[sub.id],chosen=(sub.options||[]).find(o=>o.value===correct);
+   return '<div class="pr-twist-solution-part"><p class="pr-eyebrow">FRAGE '+(i+1)+' / 2</p><h4>'+prEscape(sub.title)+'</h4>'+
+    '<p><strong>Richtige Antwort:</strong> '+prEscape(chosen?.label||correct||"–")+'</p></div>';
+  }).join("");
+  return '<div class="pr-answerbox"><p class="pr-eyebrow">GEMEINSAME AUFLÖSUNG · TWIST 3</p>'+sections+
+   '<p>'+prEscape(step.explanation||"")+'</p>'+
+   (Array.isArray(step.sources)&&step.sources.length?'<div class="pr-note"><strong>Rechtsgrundlagen:</strong> '+step.sources.map(prEscape).join(' · ')+'</div>':'')+'</div>';
+ }
  if(step.kind==='boolean')label=s.correct?"Richtig":"Falsch";
  else if(step.kind==='choice')label=s.correct==="indication"?"Der Unterschied ist ein Indiz":(step.context?.options||[]).find(o=>o.value===s.correct)?.label||"Diskussionsfall";
  else if(step.kind==='salary')label=s.minimum?"Rechtliche Untergrenze: "+prEuro(s.minimum):s.recommendedMin?"Fachlich begründeter Bereich: "+prEuro(s.recommendedMin)+" – "+prEuro(s.recommendedMax):"Stellenbewertung prüfen";
@@ -311,12 +351,13 @@ function prShowParticipant(){
   pr$("prResultHistory").innerHTML=prHistoryHTML();return;
  }
  if(pr.stepId!==step.id){
-  pr.stepId=step.id;pr.choice=null;pr.salary=Number(step.context?.default??step.context?.min??0);
+  pr.stepId=step.id;pr.choice=null;pr.dualChoice={q1:null,q2:null};pr.salary=Number(step.context?.default??step.context?.min??0);
   pr.items=[];pr.cash=0;pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;pr.ideaDraft="";
  }
  const mine=step.myAnswer;
  if(mine&&pr.choice===null&&step.kind==='boolean')pr.choice=mine.value;
  if(mine&&pr.choice===null&&step.kind==='choice')pr.choice=mine.value;
+ if(mine&&step.kind==='dual_choice'&&!pr.localEdited)pr.dualChoice={q1:mine.q1??null,q2:mine.q2??null};
  if(mine&&step.kind==='salary'&&!pr.localEdited)pr.salary=Number(mine.value);
  if(mine&&step.kind==='benefits'&&!pr.localEdited){pr.items=Array.isArray(mine.items)?[...mine.items]:[];pr.cash=Number(mine.cash||0)}
  const open=step.phase==='voting'&&!(step.kind==='benefits'&&prSecondsLeft()===0);
@@ -347,6 +388,7 @@ function prShowParticipant(){
  }
  let body='<p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+' · '+prEscape(c.name)+'</p><h2>'+prEscape(step.title)+'</h2><p class="pr-statement">'+prEscape(step.prompt)+'</p>';
  if(step.kind==='benefits')body+=prBudgetHTML(step,!open);
+ else if(step.kind==='dual_choice')body+=prDualChoiceOptions(step);
  else if(step.kind==='salary')body+=prSalaryHTML(step);
  else body+=prOptions(step);
  if(step.kind==='benefits')body+='<div class="pr-note" id="prTimerNote">'+prTimerLabel()+'</div>';
@@ -477,7 +519,14 @@ async function prJoin(name){
 async function prSubmit(){
  const step=pr.public?.step;if(!step||step.phase!=='voting'||pr.busy)return;
  let ans;
- if(step.kind==='wordcloud'){
+ if(step.kind==='dual_choice'){
+  const q1=pr.dualChoice?.q1,q2=pr.dualChoice?.q2;
+  const qs=step.context?.questions||[];
+  if(!q1||!q2||qs.length!==2||qs.some(q=>(q.options||[]).every(o=>o.value!==pr.dualChoice[q.id]))){
+   prToast("Bitte zuerst beide Fragen von Twist 3 beantworten.");return;
+  }
+  ans={q1,q2};
+ }else if(step.kind==='wordcloud'){
   const idea=prWordIdeaCheck(pr.ideaDraft);
   if(!idea.valid){prToast("Bitte einen Begriff oder einen Text mit höchstens 100 Zeichen eingeben.");pr$("prWordIdea")?.focus();return}
   const previous=prOwnWordIdeas(step.myAnswer);
@@ -540,6 +589,7 @@ document.addEventListener("click",async e=>{
  if(b.id==="prPresent"){pr.overlay=true;pr$("prOverlay").classList.remove("hidden");prRenderDashboard();return}
  if(b.id==="prOverlayClose"){pr.overlay=false;pr$("prOverlay").classList.add("hidden");if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});return}
  if(b.id==="prFullScreen"){const el=pr$("prOverlay");if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else el.requestFullscreen?.().catch(()=>{});return}
+ if(b.dataset.dualId!==undefined){prDualClick(b.dataset.dualId,b.dataset.dualChoice);return}
  if(b.dataset.choice!==undefined){prChoiceClick(b.dataset.choice);return}
  if(b.dataset.benefit){prBenefitToggle(b.dataset.benefit);return}
  if(b.dataset.cash){prCashStep(Number(b.dataset.cash));return}
