@@ -208,3 +208,14 @@
 .pr-bonus-feedback .pr-live-chart .pr-result-track{height:17px}
 .pr-bonus-feedback .pr-live-chart .pr-result-bar{margin:18px 0}
 @media(max-width:660px){.pr-bonus-verdict{gap:11px;padding:15px}.pr-bonus-verdict-icon{width:42px;height:42px;font-size:27px}}
+
+
+/* Chapter 3 | multiple contributions per participant */
+.pr-word-owned{padding:17px 18px;margin:16px 0;border:1px solid #d6e9e6;border-radius:15px;background:#f6faf9}
+.pr-word-owned-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;color:#24535e}
+.pr-word-owned-header strong{font-size:14px;font-weight:800}
+.pr-word-owned-header span{font-size:12px;color:#64818a}
+.pr-word-owned-list{display:flex;flex-wrap:wrap;gap:8px}
+.pr-word-owned-item{max-width:100%;overflow-wrap:anywhere;display:inline-flex;align-items:baseline;gap:6px;background:#e1f4f0;border:1px solid #c9e7e0;color:#126e73;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:650}
+.pr-word-owned-item small{font-size:10px;color:#6a9294}
+@media(max-width:660px){.pr-word-owned{padding:14px}.pr-word-owned-list{gap:7px}}
