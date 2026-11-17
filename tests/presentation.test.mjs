@@ -88,7 +88,7 @@ assert.match(css,/\.pr-twist-result-question/,"Two separate answer distributions
  ctx.pr.public.step=step;
  const markup=ctx.prDualChoiceOptions(step);
  assert.ok(markup.includes("TEILFRAGE 1 / 2")&&markup.includes("TEILFRAGE 2 / 2"),"Render both questions together");
- assert.ok(markup.includes("data-dual-id=\\"q1\\"")&&markup.includes("data-dual-id=\\"q2\\""),"Answer selection associated with correct subquestion");
+  assert.ok(markup.includes('data-dual-id="q1"')&&markup.includes('data-dual-id="q2"'),"Answer selection associated with correct subquestion");
  ctx.prDualClick("q2","D");
  assert.equal(ctx.pr.dualChoice.q2,"D","Second answer can be selected independently");
  assert.equal(ctx.pr.dualChoice.q1,"C","First answer must be retained");
