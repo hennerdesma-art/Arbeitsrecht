@@ -49,4 +49,28 @@ assert.equal(wordGroups[1].count,1);
 assert.match(code,/--pr-word-size:/,"Frontend must supply a responsive word-cloud scale");
 assert.match(css,/min\(var\(--pr-word-size\),9vw\)/,"Mobile view must preserve relative font sizes");
 
+
+// Chapter 4: correctness and voting distribution only; detailed legal explanations remain on slides.
+for(const feature of ["function prBonusFeedbackHTML(step){","pr-bonus-verdict","Leider falsch eingeschätzt.","Richtig eingeschätzt!","KAPITEL 04 · FALL"]){
+ assert.ok(code.includes(feature),"Chapter 4 feedback missing: "+feature);
+}
+assert.match(code,/step\.chapter===4&&step\.kind==='boolean'&&hasAnswered/,"Chapter 4 feedback appears only after a saved vote");
+assert.match(code,/if\(step\.solution&&step\.chapter!==4\)body\+=prLegalSolution\(step\)/,"Never render legal commentary for chapter 4 in generic view");
+assert.match(code,/step\.chapter!==4\)text\+=prLegalSolution\(step\)/,"Do not render chapter 4 legal explanations in projector dashboard");
+assert.match(code,/if\(\[1,2,4\]\.includes\(step\.chapter\)\)/,"Scroll to immediate chapter 4 feedback after answer");
+assert.match(css,/\.pr-bonus-verdict/,"Chapter 4 keeps a responsive card design");
+{
+ const begin=code.indexOf("function prBonusFeedbackHTML(step){");
+ const end=code.indexOf("function prInstantFeedbackHTML(step){",begin);
+ assert.ok(begin>0&&end>begin,"Dedicated chapter 4 feedback renderer must exist");
+ const sandbox={pr:{public:{participants:3}},prStats:(label,value)=>"<b>"+label+":"+value+"</b>",prResultRows:()=>"VERTEILUNG",prButton:()=>"<button>Antwort ändern</button>"};
+ vm.createContext(sandbox);vm.runInContext(code.slice(begin,end),sandbox);
+ const correct=sandbox.prBonusFeedbackHTML({seq:1,kind:"boolean",phase:"voting",myAnswer:{value:false},solution:{correct:false},responses:[{answer:{value:false}},{answer:{value:true}}],explanation:"LEGAL_SECRET"});
+ assert.ok(correct.includes("Richtig eingeschätzt!")&&correct.includes("VERTEILUNG"),"Correct answer and live distribution should appear");
+ assert.ok(!correct.includes("LEGAL_SECRET"),"No legal reasoning in participant feedback");
+ const incorrect=sandbox.prBonusFeedbackHTML({seq:3,kind:"boolean",phase:"closed",myAnswer:{value:true},solution:{correct:false},responses:[{answer:{value:true}}],explanation:"LEGAL_SECRET"});
+ assert.ok(incorrect.includes("Leider falsch eingeschätzt."),"Incorrect answers must be graded immediately");
+ assert.ok(!incorrect.includes("LEGAL_SECRET"),"Keep explanations on slides only");
+}
+
 console.log("Presentation static checks passed (six chapters, NXT design, RPC, salary and benefits).");
