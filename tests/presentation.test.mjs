@@ -20,6 +20,10 @@ for(const design of ["#008b93","#0d2832",".pr-benefit",".pr-dash-card",".pr-live
 assert.match(html,/nxt-logo\.svg/);
 assert.match(code,/\[1,2\]\.includes\(step\.chapter\)/,"Instant results are limited to chapters 1 and 2");
 assert.match(code,/step\.myAnswer!==null/,"Require saved vote before showing feedback");
+assert.match(code,/const liveReview=\[1,2\]\.includes\(step\.chapter\)&&hasAnswered&&Array\.isArray\(step\.responses\);/,"Diagram must not require released legal solution");
+assert.match(code,/const released=step\.phase==='revealed'&&step\.solution!==null/,"Correctness and law explanation require moderator reveal");
+assert.match(code,/if\(released\)html\+=prLegalSolution\(step\)/,"Hide legal explanation until manual reveal");
+assert.match(code,/Auflösung noch nicht freigegeben/,"Show pending state before the solution is released");
 assert.match(code,/setInterval\(\(\)=>prFetch\(\),2500\)/,"Live results need regular refresh");
 assert.match(code,/sessionStorage\.getItem\("nxt_admin"\)/);
 assert.ok(!code.includes("service_role"),"Secret service role must never be exposed");
