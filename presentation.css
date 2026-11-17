@@ -126,3 +126,45 @@
 @media(max-width:1020px){.pr-intro,.pr-admin-layout{grid-template-columns:1fr}.pr-main-grid{grid-template-columns:minmax(0,1fr)}.pr-sidebar{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.pr-sticky{position:static}.pr-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:660px){.pr-container{padding:18px 14px 48px}.pr-chapter-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.pr-admin-chapters{grid-template-columns:1fr}.pr-sidebar{grid-template-columns:1fr}.pr-dash-layout{grid-template-columns:1fr}.pr-hero{align-items:flex-start;flex-direction:column}.pr-hero h1{font-size:36px}.pr-card{border-radius:16px}.pr-intro{min-height:unset}.pr-intro h1{font-size:52px}.pr-topactions{gap:7px}.pr-kpis{gap:8px}.pr-kpi{padding:13px}.pr-admin-live-actions{grid-template-columns:1fr}.pr-admin-live-actions .wide{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+
+/* Individual post-vote live analytics | chapters 1 and 2 */
+.pr-live-feedback{border-top:1px solid #deece9;margin-top:16px;padding-top:19px}
+.pr-live-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:17px}
+.pr-live-head h3{font:700 clamp(22px,3vw,32px)/1.12 "Space Grotesk",sans-serif;letter-spacing:-.045em;margin:9px 0}
+.pr-live-badge{display:inline-flex;align-items:center;gap:7px;color:#057a73;font-size:11px;font-weight:850;letter-spacing:.08em;white-space:nowrap;background:#def4ef;border:1px solid #b2e1d8;padding:10px 13px;border-radius:99px}
+.pr-live-badge i{height:7px;width:7px;background:#00a98b;border-radius:50%;box-shadow:0 0 0 4px #bceadf}
+.pr-live-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.pr-live-metrics .pr-fact{background:#f0f8f7;min-width:0}
+.pr-live-metrics .pr-fact strong{font-size:clamp(15px,1.8vw,21px);overflow-wrap:anywhere}
+.pr-live-chart{border:1px solid #dcece9;background:#f9fcfb;padding:clamp(14px,2.4vw,24px);border-radius:16px;margin:17px 0}
+.pr-live-chart .pr-result-bar{margin:17px 0}
+.pr-live-chart .pr-result-track{height:15px;background:#e5f2f0}
+.pr-live-chart .pr-result-track span{background:linear-gradient(90deg,#008b93,#19bbb0)}
+.pr-feedback-insight{font-size:14px;line-height:1.55;font-weight:650;color:#285a61;background:#edf8f6;padding:13px 16px;border-radius:11px;margin:15px 0}
+.pr-review-original{margin:15px 0;padding:14px 17px;background:#f5faf9;border:1px solid #e2ecea;border-radius:12px}
+.pr-review-original summary{font-weight:750;color:#4e7680;font-size:13px;cursor:pointer}
+.pr-review-original p{font-size:13px;color:#496970;line-height:1.7;margin:12px 0 0}
+.pr-live-hist-scroll{width:100%;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin}
+.pr-live-hist{display:flex;gap:7px;height:164px;align-items:stretch;min-width:340px}
+.pr-hist-column{position:relative;min-width:14px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.pr-hist-value{font-size:11px;font-weight:800;color:#3c6670;min-height:19px}
+.pr-hist-column-track{height:127px;width:100%;background:transparent;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid #c6ddda}
+.pr-hist-column-track span{display:block;width:80%;background:linear-gradient(180deg,#25c2bc,#007f8d);border-radius:5px 5px 0 0;min-height:0}
+.pr-hist-column.is-mine .pr-hist-column-track span{background:linear-gradient(180deg,#e0b364,#b17f36)}
+.pr-hist-axis{display:flex;justify-content:space-between;gap:8px;color:#5a7881;font-size:12px;font-weight:650;margin-top:9px}
+.pr-live-legend{display:flex;flex-wrap:wrap;gap:16px;font-size:11px;color:#65828b;margin:12px 0}
+.pr-live-legend span{display:inline-flex;align-items:center;gap:7px}
+.pr-live-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.pr-legend-bar{background:#008b93}
+.pr-legend-mine{background:#d8ab5b}
+.pr-live-feedback .pr-answerbox{margin-top:20px}
+.pr-live-feedback .pr-note-bubble{margin-top:13px}
+@media(max-width:660px){
+ .pr-live-head{align-items:start;gap:8px}
+ .pr-live-metrics{gap:7px;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .pr-live-metrics .pr-fact{padding:10px}
+ .pr-live-chart{padding:13px}
+ .pr-live-hist{gap:5px}
+ .pr-live-badge{padding:7px 9px}
+}
