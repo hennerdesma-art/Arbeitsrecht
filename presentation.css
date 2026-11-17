@@ -168,3 +168,29 @@
  .pr-live-hist{gap:5px}
  .pr-live-badge{padding:7px 9px}
 }
+
+
+/* Kapitel 3 – responsive NXT word cloud */
+.pr-lena-case{margin:17px 0 22px;padding:17px 19px;border-radius:15px;border:1px solid #d9e9e6;background:#eff8f7}
+.pr-lena-case p{font-size:clamp(14px,1.4vw,17px);line-height:1.65;color:#355e64;margin:9px 0 1px}
+.pr-word-question{font:700 clamp(23px,3vw,35px)/1.16 "Space Grotesk",sans-serif;letter-spacing:-.05em;color:#123c43;margin:21px 0}
+.pr-word-editor{margin:15px 0;padding:clamp(17px,2vw,23px);background:#f7fbfa;border:1px solid #dbeae6;border-radius:16px}
+.pr-word-editor label{display:block;margin:0 0 10px;font-size:11px;font-weight:800;letter-spacing:.12em;color:#47838a}
+.pr-word-editor input{width:100%;max-width:none;font-size:17px;line-height:1.5;font-family:inherit;border:1px solid #bcdad6;background:white;outline-offset:3px;border-radius:12px;padding:13px 15px;box-sizing:border-box}
+.pr-word-editor input:focus-visible{outline:3px solid #8edbd2;border-color:#008b93}
+.pr-word-results{border-top:1px solid #e0eeeb;padding-top:22px;margin-top:22px}
+.pr-word-results .pr-live-head h3{font-size:clamp(25px,3vw,36px)}
+.pr-word-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0 6px}
+.pr-word-cloud{min-height:220px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;align-content:center;flex-wrap:wrap;column-gap:clamp(12px,2vw,23px);row-gap:clamp(10px,2vw,20px);padding:clamp(19px,3vw,36px) clamp(11px,2.5vw,24px);border-radius:16px;border:1px solid #d7ece8;background:radial-gradient(ellipse at 30% 20%,#e6f8f4 0%,#f5fbf9 55%,#eef7f8 100%);overflow-wrap:anywhere;text-align:center}
+.pr-word-term{display:inline-flex;align-items:flex-start;gap:3px;max-width:100%;font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1.15;letter-spacing:-.035em;transition:transform .2s;color:#006e76}
+.pr-word-term:hover{transform:scale(1.06)}
+.pr-word-tone-1{color:#249587}.pr-word-tone-2{color:#27536c}.pr-word-tone-3{color:#619b91}
+.pr-word-term sup{font:700 10px/1 "Space Grotesk",sans-serif;letter-spacing:0;color:#63858b;padding-top:3px}
+.pr-word-empty{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px dashed #b5dcd5;border-radius:16px;color:#6c858a;background:#f7fbfa}
+.pr-word-empty span{font-size:33px;color:#0a908d}.pr-word-empty p{font-size:13px;text-align:center}
+.pr-word-cloud-small{min-height:115px;padding:15px 8px;gap:10px}
+.pr-admin-wordcloud{margin-top:18px;padding:14px;border:1px solid #dbeae6;border-radius:14px;background:#f8fbfa}
+.pr-admin-wordcloud .pr-word-cloud{min-height:160px;padding:17px 9px}
+.pr-history-card .pr-word-cloud{margin-top:14px}
+@media(max-width:660px){.pr-word-cloud{min-height:200px;padding:20px 9px;column-gap:11px;row-gap:13px}.pr-word-term{font-size:min(10vw,inherit)}.pr-word-meta{gap:7px}.pr-lena-case{padding:15px}}
+@media(prefers-reduced-motion:reduce){.pr-word-term{transition:none}.pr-word-term:hover{transform:none}}
