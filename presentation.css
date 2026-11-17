@@ -194,3 +194,17 @@
 .pr-history-card .pr-word-cloud{margin-top:14px}
 @media(max-width:660px){.pr-word-cloud{min-height:200px;padding:20px 9px;column-gap:11px;row-gap:13px}.pr-word-term{font-size:min(var(--pr-word-size),9vw)!important}.pr-word-meta{gap:7px}.pr-lena-case{padding:15px}}
 @media(prefers-reduced-motion:reduce){.pr-word-term{transition:none}.pr-word-term:hover{transform:none}}
+
+
+/* Chapter 4 – compact post-vote verdict; retain NXT colors, type and layout */
+.pr-bonus-feedback{margin-top:16px}
+.pr-bonus-verdict{display:flex;align-items:center;gap:16px;border-radius:16px;padding:clamp(16px,2.3vw,24px);border:1px solid #c9e7e1;margin:16px 0;background:#eaf8f5;color:#165b57}
+.pr-bonus-verdict.pr-bonus-incorrect{background:#fff4f0;border-color:#ecd3c8;color:#934c3a}
+.pr-bonus-verdict-icon{display:inline-grid;place-items:center;border-radius:50%;height:46px;width:46px;flex-shrink:0;background:#13857f;color:#fff;font:700 30px/1 "Space Grotesk",sans-serif}
+.pr-bonus-incorrect .pr-bonus-verdict-icon{background:#ba6855}
+.pr-bonus-verdict strong{font:700 clamp(21px,2.5vw,28px)/1.2 "Space Grotesk",sans-serif;letter-spacing:-.035em}
+.pr-bonus-verdict p{margin:4px 0 0;font-size:13px;color:inherit}
+.pr-bonus-feedback .pr-live-chart h3{font:700 clamp(19px,2.2vw,25px)/1.2 "Space Grotesk",sans-serif;letter-spacing:-.035em;margin:7px 0 16px}
+.pr-bonus-feedback .pr-live-chart .pr-result-track{height:17px}
+.pr-bonus-feedback .pr-live-chart .pr-result-bar{margin:18px 0}
+@media(max-width:660px){.pr-bonus-verdict{gap:11px;padding:15px}.pr-bonus-verdict-icon{width:42px;height:42px;font-size:27px}}
