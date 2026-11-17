@@ -19,7 +19,7 @@ Die Gehaltsfragen nutzen Touch-Slider, Schritt-Tasten und direkte Zahleneingabe.
 - Fragen aus Ebene 1 oder 2 direkt starten und überspringen
 - Abstimmungen schließen und Lösungen nachträglich freigeben
 - Die anonyme Verteilung optional ohne Antwortschlüssel einblenden
-- Eine Session abschließen und Demo-Session-Daten nach Bestätigung zurücksetzen
+- Eine Session abschließen sowie Demo-Daten oder Live-Daten (nur nach zweimaliger Bestätigung und exaktem Sessionnamen) zurücksetzen
 - Aggregierte Ergebnisse als CSV exportieren und ein Beamer-Dashboard öffnen
 
 Die Lösungen werden **ausschließlich aus der gesperrten Datenbank** abgerufen und den Teilnehmenden erst bei \`revealed\` angezeigt. Im öffentlichen Repository befinden sich keine Antwortschlüssel.
