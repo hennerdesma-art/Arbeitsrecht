@@ -20,7 +20,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Verify workshop JavaScript and mobile UI
-        run: node tests/workshop.test.mjs
+        run: |
+          node tests/workshop.test.mjs
+          node tests/presentation.test.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static website
