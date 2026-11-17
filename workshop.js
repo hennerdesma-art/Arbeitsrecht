@@ -5,7 +5,7 @@ const KEY="sb_publishable_MdUD-YPx8HT7WO7MnOqVLQ_fW5-Cnvn";
 const $=id=>document.getElementById(id);
 const ws={name:localStorage.getItem("nxt_name")||"",device:localStorage.getItem("nxt_device")||"",
  adminPass:sessionStorage.getItem("nxt_admin")||"",public:null,admin:null,mode:"join",tab:"executive",
- selected:null,salary:null,busy:false,fetching:false,overlay:false,filter:"all"};
+ selected:null,salary:null,busy:false,fetching:false,overlay:false,filter:"all",legalFilter:"all"};
 if(!ws.device){ws.device=crypto.randomUUID();localStorage.setItem("nxt_device",ws.device)}
 async function rpc(fn,body={}){
  const r=await fetch(API+fn,{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
@@ -214,6 +214,7 @@ function renderAdmin(){
  $("wsPanel").querySelectorAll("[data-ws-action]").forEach(b=>b.addEventListener("click",()=>onAction(b.dataset.wsAction)));
  $("wsPanel").querySelectorAll("[data-start-question]").forEach(b=>b.addEventListener("click",()=>changeAdmin("start",{p_question:b.dataset.startQuestion})));
  $("wsShowDistribution")?.addEventListener("change",e=>changeAdmin("distribution",{p_flag:e.target.checked}));
+ $("wsLegalFilter")?.addEventListener("change",e=>{ws.legalFilter=e.target.value;renderAdmin()});
 }
 async function adminLogin(){
  ws.admin=await rpc("arb_ws_admin",{p_password:ws.adminPass,p_action:"status"});
