@@ -193,7 +193,7 @@ function prShowParticipant(){
 function prSecondsLeft(){
  const c=pr.clock;
  if(!c||!pr.public?.step||c.activeStep!==pr.public.step.id||c.duration==null||!c.openedAt)return null;
- return Math.max(0,Math.ceil(Number(c.duration)-(Number(c.serverNow)-Number(c.openedAt))));
+ return Math.max(0,Math.ceil(Number(c.duration)-(Number(c.serverNow)-Number(c.openedAt))-(Date.now()-Number(c.clientReceivedAt||Date.now()))/1000));
 }
 function prTimerLabel(){const secs=prSecondsLeft();return secs==null?"5 Minuten Auswahlzeit":secs>0?"Auswahlzeit: "+Math.floor(secs/60)+":"+String(secs%60).padStart(2,"0")+" Minuten verbleibend":"Die fünf Minuten sind abgelaufen."}
 function prRenderKpis(){
@@ -277,7 +277,7 @@ async function prFetch(silent=true){
     pr.password="";sessionStorage.removeItem("nxt_admin");pr.admin=null;if(!silent)prToast(e.message);
   }}
   if(pub.step?.kind==='benefits'||pr.admin?.activeStep==='benefit-pack'){
-   try{pr.clock=await prRpc("arb_pr_clock",{})}catch(e){pr.clock=null}
+   try{pr.clock=await prRpc("arb_pr_clock",{});pr.clock.clientReceivedAt=Date.now()}catch(e){pr.clock=null}
   }else pr.clock=null;
   if(pr.view==='participant'&&pr.name&&pr.joinedSession!==pub.sessionId){
    try{await prRpc("arb_pr_join",{p_device:pr.device,p_name:pr.name});pr.joinedSession=pub.sessionId}catch(e){if(!silent)prToast(e.message)}
