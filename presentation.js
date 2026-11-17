@@ -122,7 +122,7 @@ function prWordCloudHTML(responses,compact=false){
  html+=terms.map((term,index)=>{
   const font=Math.min(compact?31:48,Math.round((compact?11:10)+(compact?10:13)*Math.log2(term.count+1)));
   const tone=index%4;
-  return '<span class="pr-word-term pr-word-tone-'+tone+'" role="listitem" style="font-size:'+font+'px" title="'+prEscape(term.count+' '+(term.count===1?'Nennung':'Nennungen'))+'">'+prEscape(term.label)+'<sup>'+term.count+'</sup></span>';
+  return '<span class="pr-word-term pr-word-tone-'+tone+'" role="listitem" style="--pr-word-size:'+font+'px;font-size:'+font+'px" title="'+prEscape(term.count+' '+(term.count===1?'Nennung':'Nennungen'))+'">'+prEscape(term.label)+'<sup>'+term.count+'</sup></span>';
  }).join("");
  html+='</div><p class="pr-note">Häufig genannte Antworten werden größer. Groß-/Kleinschreibung und zusätzliche Leerzeichen werden zusammengefasst.</p>';
  return html;
