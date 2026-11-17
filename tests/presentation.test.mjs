@@ -65,4 +65,33 @@ assert.match(css,/\.pr-word-owned-list/,"Previous ideas shown as responsive chip
 assert.match(code,/--pr-word-size:/,"Word-cloud font scale remains proportional");
 assert.match(css,/min\(var\(--pr-word-size\),9vw\)/,"Mobile font sizes remain responsive");
 
+
+// Chapter 5 twists v2: option choices, atomic two-question submission and shared reveal.
+for(const feature of ["function prDualChoiceOptions(step){","function prDualClick(questionId,value){","step.kind==='dual_choice'","Bitte zuerst beide Fragen von Twist 3 beantworten.","pr.dualChoice={q1:null,q2:null}"]){
+ assert.ok(code.includes(feature),"Twist 3 UI logic missing: "+feature);
+}
+assert.match(code,/data-dual-id=/,"Distinct answer keys for both Twist 3 subquestions");
+assert.match(code,/prDualClick\(b\.dataset\.dualId,b\.dataset\.dualChoice\)/,"Clicks route to the corresponding question");
+assert.match(code,/ans=\{q1,q2\}/,"Both answers must be submitted together");
+assert.match(css,/\.pr-twist-double/,"Keep the paired quiz in the existing NXT design");
+assert.match(css,/\.pr-twist-result-question/,"Two separate answer distributions required");
+{
+ const start=code.indexOf("function prDualChoiceOptions(step){");
+ const end=code.indexOf("function prOptions(step){",start);
+ assert.ok(start>=0&&end>start,"Dual question component missing");
+ const ctx={pr:{dualChoice:{q1:"C",q2:null},public:{step:null}},prEscape:s=>String(s),prShowParticipant:()=>{}};
+ vm.createContext(ctx);vm.runInContext(code.slice(start,end),ctx);
+ const step={kind:"dual_choice",phase:"voting",context:{questions:[
+  {id:"q1",title:"Darf man streichen?",options:[{value:"A",label:"A) Ja"},{value:"C",label:"C) Kommt darauf an"}]},
+  {id:"q2",title:"Mitbestimmung?",options:[{value:"D",label:"D) Verteilungsregeln"},{value:"E",label:"E) Alles"}]}
+ ]}};
+ ctx.pr.public.step=step;
+ const markup=ctx.prDualChoiceOptions(step);
+ assert.ok(markup.includes("TEILFRAGE 1 / 2")&&markup.includes("TEILFRAGE 2 / 2"),"Render both questions together");
+ assert.ok(markup.includes("data-dual-id=\\"q1\\"")&&markup.includes("data-dual-id=\\"q2\\""),"Answer selection associated with correct subquestion");
+ ctx.prDualClick("q2","D");
+ assert.equal(ctx.pr.dualChoice.q2,"D","Second answer can be selected independently");
+ assert.equal(ctx.pr.dualChoice.q1,"C","First answer must be retained");
+}
+
 console.log("Presentation static checks passed (six chapters, NXT design, RPC, salary and benefits).");
