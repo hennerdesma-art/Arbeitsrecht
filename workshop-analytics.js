@@ -74,7 +74,8 @@ function wsExecutiveHTML(){
  wsBars([{label:"Gesamte Aufgaben abgeschlossen",count:completed}],12)+'</div></div></div>';
 }
 function wsLegalHTML(){
- const questions=wsAdminQuestions().filter(q=>q.level===1),rated=questions.filter(q=>wsPhase(q.id)==="revealed"&&wsVotes(q.id).length).map(q=>({q,s:wsScore(q)})),sum=wsLegalSum(1);
+ const filter=ws.legalFilter||"all";
+ const questions=wsAdminQuestions().filter(q=>q.level===1&&(filter==="all"||q.topic.startsWith(filter))),rated=questions.filter(q=>wsPhase(q.id)==="revealed"&&wsVotes(q.id).length).map(q=>({q,s:wsScore(q)})),sum=wsLegalSum(1);
  const hardest=rated.slice().sort((a,b)=>a.s.rate-b.s.rate)[0],topicGroups=[...new Set(questions.map(q=>q.topic.split(" · ")[0]))];
  const heat='<div class="ws-heatmap">'+topicGroups.map(t=>{
  const group=rated.filter(x=>x.q.topic.startsWith(t)),n=group.reduce((s,x)=>s+x.s.total,0),correct=group.reduce((s,x)=>s+x.s.correct,0),rate=wsPct(correct,n);
