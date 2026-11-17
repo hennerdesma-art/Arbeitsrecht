@@ -289,7 +289,7 @@ function prShowParticipant(){
  const open=step.phase==='voting'&&!(step.kind==='benefits'&&prSecondsLeft()===0);
  if(step.kind==='wordcloud'){
   // Avoid destroying a focused text field on each live refresh.
-  if(open&&document.activeElement?.id==='prWordIdea'&&pr.wordViewStep===step.id&&pr.wordViewPhase===step.phase)return;
+  if(open&&document.activeElement?.id==='prWordIdea'&&pr.wordViewStep===step.id&&pr.wordViewPhase===step.phase&&(!step.myAnswer||pr.wordEditing))return;
   if(step.myAnswer&&!pr.wordEditing)pr.ideaDraft=step.myAnswer.value||"";
   pr$("prCurrent").innerHTML=prWordParticipantHTML(step,open);
   pr.wordViewStep=step.id;pr.wordViewPhase=step.phase;
