@@ -33,4 +33,20 @@ assert.match(code,/Auflösung noch nicht freigegeben/,"Show pending state before
 assert.match(code,/setInterval\(\(\)=>prFetch\(\),2500\)/,"Live results need regular refresh");
 assert.match(code,/sessionStorage\.getItem\("nxt_admin"\)/);
 assert.ok(!code.includes("service_role"),"Secret service role must never be exposed");
+
+// Real normalization and frequency check for the third chapter's free text.
+const wordStart=code.indexOf("function prWordIdeaCheck(value){");
+const wordEnd=code.indexOf("function prWordCloudHTML(",wordStart);
+assert.ok(wordStart>=0&&wordEnd>wordStart,"Word-cloud functions should be defined");
+const wordContext=vm.createContext({});
+vm.runInContext(code.slice(wordStart,wordEnd),wordContext);
+assert.equal(vm.runInContext('prWordIdeaCheck("Betriebsrat").valid',wordContext),false,"Exactly two to three words required");
+assert.equal(vm.runInContext('prWordIdeaCheck("Betriebsrat einschalten").valid',wordContext),true);
+const wordGroups=vm.runInContext('prWordCloudData([{answer:{value:"Betriebsrat fragen"}},{answer:{value:"betriebsrat   fragen."}},{answer:{value:"Auskunft verlangen"}}])',wordContext);
+assert.equal(wordGroups[0].count,2,"Repeated normalized ideas should be shown larger");
+assert.equal(wordGroups.length,2,"Variants should be aggregated");
+assert.equal(wordGroups[1].count,1);
+assert.match(code,/--pr-word-size:/,"Frontend must supply a responsive word-cloud scale");
+assert.match(css,/min\(var\(--pr-word-size\),9vw\)/,"Mobile view must preserve relative font sizes");
+
 console.log("Presentation static checks passed (six chapters, NXT design, RPC, salary and benefits).");
