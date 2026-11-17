@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#008b93"><meta name="description" content="NXT Arbeitsrecht: HR-Rechtscheck und Gehaltsmanager. Interaktive Lehrspiele mit Live-Auswertung.">
+<title>NXT | Rechtscheck & Gehaltsmanager</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="dashboard.css"><link rel="stylesheet" href="mobile.css"><link rel="stylesheet" href="workshop.css">
+</head><body class="workshop-page">
+<div class="glow glow-a"></div><div class="glow glow-b"></div>
+<header class="topbar ws-topbar">
+ <a class="brand" href="index.html" aria-label="NXT Startseite"><img src="assets/nxt-logo.svg" alt="NXT Reutlingen University"></a>
+ <div class="ws-top-actions"><span id="wsConnection" class="connection"><i></i>VERBINDUNG</span>
+ <a class="ghost small ws-home-link" href="index.html">← Alle Spiele</a>
+ <button id="wsAdminButton" class="ghost small" type="button">Admin ↗</button></div>
+</header>
+<main class="ws-main">
+ <section id="wsJoin" class="ws-shell">
+  <div class="ws-eyebrow">NXT · INTERAKTIVE LEHRVERANSTALTUNG</div>
+  <div class="ws-splash"><div><h1>Verstehen.<br><em>Entscheiden.</em><br>Diskutieren.</h1><p>Zwölf anspruchsvolle Entscheidungen aus Rechtssicherheit und Fixgehalt. Jede Stimme zählt – und jede fachliche Auflösung bringt uns weiter.</p></div>
+  <div class="ws-glass ws-onboarding"><div class="ws-eyebrow">01 · DEIN START</div><h2>Wie dürfen wir dich nennen?</h2><form id="wsJoinForm"><label for="wsNickname">NAME ODER PSEUDONYM</label><input id="wsNickname" minlength="2" maxlength="30" required autocomplete="nickname" placeholder="Dein Vorname / Spitzname"><button class="primary full" type="submit">An der Session teilnehmen ↗</button></form><p class="micro">Ohne E-Mail oder Konto. Dein Browser erhält einen zufälligen Code, damit deine Antwort nicht doppelt gezählt wird. Während der offenen Abstimmung kannst du sie ändern.</p></div></div>
+ </section>
+ <section id="wsPlay" class="ws-shell hidden">
+  <div class="ws-player-top"><div><div class="ws-eyebrow">NXT · LIVE LEARNING</div><h1>Hi, <span id="wsPlayerName">du</span><span class="accent">.</span></h1><p id="wsSessionLabel" class="ws-muted">Präsentationssitzung</p></div><span class="ws-status-pill" id="wsPhaseTag">Auf die nächste Frage warten</span></div>
+  <div class="ws-level-switch"><div class="ws-level-item" data-level="1"><strong>01</strong><span>Rechtssicherheit</span></div><div class="ws-level-item" data-level="2"><strong>02</strong><span>Fixgehalt</span></div><div class="ws-progress-label" id="wsProgress">0 von 12 Fragen</div></div>
+  <div id="wsQuestion" class="ws-glass ws-question"></div>
+  <div id="wsSupport" class="ws-support"></div>
+ </section>
+ <section id="wsAdmin" class="ws-admin-shell hidden">
+  <div class="ws-admin-heading"><div><div class="ws-eyebrow">NXT · MODERATOR CONTROL CENTER</div><h1>Lecture <span class="accent">Analytics.</span></h1><p>Präsentationssteuerung und Live-Auswertung · Ebene 1 & 2</p></div><button class="ghost" id="wsAdminBack">← Teilnehmeransicht</button></div>
+  <div id="wsAdminLogin" class="ws-glass ws-admin-login"><div class="ws-eyebrow">GESCHÜTZTER ADMIN-ZUGANG</div><h2>Moderator anmelden</h2><p>Der bereits vorhandene Admin-Zugang wird verwendet. Alle Änderungen werden serverseitig geprüft.</p><form id="wsAdminForm"><label for="wsAdminPassword">PASSWORT</label><input type="password" id="wsAdminPassword" autocomplete="off" required placeholder="Passwort eingeben"><button type="submit" class="primary full">Admin-Dashboard öffnen ↗</button></form></div>
+  <div id="wsAdminContent" class="hidden">
+   <div id="wsAdminTabs" class="ws-tabbar" role="tablist" aria-label="Dashboard-Ansichten">
+    <button type="button" class="ws-tab active" data-tab="executive">Executive Overview</button>
+    <button type="button" class="ws-tab" data-tab="legal">Rechtssicherheit</button>
+    <button type="button" class="ws-tab" data-tab="salary">Fixgehalt</button>
+    <button type="button" class="ws-tab" data-tab="compare">Vergleich</button>
+    <button type="button" class="ws-tab" data-tab="control">Spielsteuerung</button>
+   </div>
+   <div class="ws-kpi-grid" id="wsKpis"></div>
+   <section id="wsPanel" aria-live="polite"></section>
+   <div class="ws-admin-footer"><button type="button" class="ghost small" id="wsExport">CSV exportieren ↓</button><button type="button" class="ghost small" id="wsAdminRefresh">Aktualisieren ↻</button><button type="button" class="ghost small" id="wsAdminLogout">Abmelden</button></div>
+  </div>
+ </section>
+</main>
+<div id="wsToast" class="toast hidden" role="status" aria-live="polite"></div>
+<div id="wsOverlay" class="ws-overlay hidden" role="dialog" aria-modal="true" aria-label="Präsentationsansicht"><div class="ws-overlay-panel"><div class="ws-overlay-head"><span class="ws-eyebrow">NXT · BEAMER-DASHBOARD</span><div><button class="ghost small" id="wsFullScreen">⛶ Vollbild</button><button class="ghost small" id="wsOverlayClose">Schließen ×</button></div></div><div id="wsOverlayBody"></div></div></div>
+<footer><span>© NXT · REUTLINGEN UNIVERSITY</span><span>THEMA 6 · VERGÜTUNG & BENEFITS</span></footer>
+<script src="workshop.js" defer></script>
+</body></html>
