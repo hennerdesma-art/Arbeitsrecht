@@ -237,3 +237,15 @@
 .pr-twist-solution-part{padding:12px 0;border-bottom:1px solid #d1e9e4}
 .pr-twist-solution-part p{font-size:14px;line-height:1.55}
 @media(max-width:720px){.pr-twist-question .pr-optiongrid{grid-template-columns:1fr}.pr-twist-question{padding:16px}.pr-twist-question .pr-option{min-height:58px}}
+
+
+/* Chapter 5 live Twist charts – same NXT visual language as chapters 1–4 */
+.pr-twist-feedback .pr-live-chart{margin-top:18px}
+.pr-twist-my-vote{display:flex;flex-wrap:wrap;align-items:center;gap:8px 17px;padding:13px 16px;background:#e9f7f4;border:1px solid #d0e9e3;border-radius:13px;font-size:13px;color:#255a61}
+.pr-twist-my-vote span{max-width:100%;overflow-wrap:anywhere}
+.pr-twist-feedback .pr-result-bar>div:first-child{display:flex;align-items:flex-start;gap:12px}
+.pr-twist-feedback .pr-result-bar>div:first-child>span{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.45}
+.pr-twist-feedback .pr-result-bar>div:first-child>strong{flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pr-twist-feedback .pr-result-track{height:13px}
+.pr-twist-feedback .pr-twist-result-question{background:#fff;margin:12px 0}
+@media(max-width:660px){.pr-twist-my-vote{padding:12px;gap:7px}.pr-twist-feedback .pr-live-head{align-items:flex-start}.pr-twist-feedback .pr-result-bar>div:first-child{gap:7px}}
