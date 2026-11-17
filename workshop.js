@@ -185,7 +185,7 @@ function adminControlHTML(){
  '<div class="ws-buttonrow"><button class="primary" data-ws-action="new-live">Neue Live-Session</button><button class="secondary" data-ws-action="new-demo">Neue Demo-Session</button></div>'+
  '<p class="ws-tiny">Neue Sessions starten ohne Stimmen. Vorherige Ergebnisse werden nicht gelöscht.</p>'+
  '<div class="ws-buttonrow"><button class="ghost" data-ws-action="finish">Session abschließen</button>'+
- (d.isDemo?'<button class="ghost" data-ws-action="reset-demo">Demo-Daten zurücksetzen</button>':'')+'</div></div>'+
+ (d.isDemo?'<button class="ghost" data-ws-action="reset-demo">Demo-Daten zurücksetzen</button>':'<button class="ghost" data-ws-action="reset-live">Live-Daten zurücksetzen</button>')+'</div></div>'+
  '<div class="ws-panel"><div class="ws-eyebrow">SPIELPHASEN</div><h3>Frage steuern</h3>'+
  (active?'<div class="ws-big-callout"><strong>'+wsEsc(active.title)+'</strong>'+phaseName(state?.phase)+'</div>':
  '<div class="ws-empty">Wähle unten eine Frage aus.</div>')+
@@ -236,6 +236,15 @@ async function onAction(action){
  }
  if(action==="finish"){if(confirm("Session abschließen? Daten bleiben erhalten."))await changeAdmin("finish");return}
  if(action==="reset-demo"){if(confirm("Alle Stimmen und Teilnehmenden dieser Demo-Session löschen?"))await changeAdmin("reset_demo");return}
+ if(action==="reset-live"){
+  const label=ws.admin?.sessionLabel;
+  const confirmation=prompt("Achtung: Alle Live-Stimmen und Teilnehmer dieser Session werden endgültig gelöscht. Zur Bestätigung den exakten Sessionnamen eingeben:", "");
+  if(confirmation===null)return;
+  if(confirmation!==label){toast("Sessionname stimmt nicht überein. Keine Daten gelöscht.");return}
+  if(!confirm("Letzte Bestätigung: Alle Daten dieser Live-Session unwiderruflich zurücksetzen?"))return;
+  try{await rpc("arb_ws_reset_live",{p_password:ws.adminPass,p_confirmation:confirmation});toast("Live-Session zurückgesetzt.");await refresh()}catch(e){toast(e.message)}
+  return;
+ }
  if(action==="reveal"&&wsPhase(ws.admin.activeQuestion)!=="closed"){toast("Zuerst die Abstimmung schließen.");return}
  if(["close","reveal","skip"].includes(action))await changeAdmin(action);
 }
