@@ -31,16 +31,23 @@ async function refresh(){
  if(ws.fetching)return;ws.fetching=true;
  try{
   const oldSession=ws.public?.sessionId,oldQuestion=ws.public?.activeQuestion?.id;
+  const oldPhase=ws.public?.activeQuestion?.phase;
+  const editingSalary=["wsRange","wsExactAmount"].includes(document.activeElement?.id);
+  const editingSession=document.activeElement?.id==="wsNewSessionLabel";
   ws.public=await rpc("arb_ws_public",{p_device:ws.device});
   if(ws.name&&ws.public?.sessionId&&ws.public.sessionId!==oldSession){
     await join();ws.public=await rpc("arb_ws_public",{p_device:ws.device});
   }
   if(oldQuestion!==ws.public?.activeQuestion?.id){ws.selected=null;ws.salary=null}
   $("wsConnection").className="connection online";$("wsConnection").innerHTML="<i></i>LIVE VERBUNDEN";
-  if(ws.mode==="participant")renderPlayer();
+  if(ws.mode==="participant"){
+    if(!editingSalary||oldQuestion!==ws.public?.activeQuestion?.id||oldPhase!==ws.public?.activeQuestion?.phase)renderPlayer();
+    else $("wsSupport").textContent=ws.public.participants+" registriert · "+ws.public.activeParticipants+" online · "+(ws.public.activeQuestion?.voted||0)+" Stimmen in dieser Runde";
+  }
   if(ws.mode==="admin"&&ws.adminPass){
    ws.admin=await rpc("arb_ws_admin",{p_password:ws.adminPass,p_action:"status"});
-   renderAdmin();if(ws.overlay)renderOverlay();
+   if(!editingSession)renderAdmin();else renderKpis();
+   if(ws.overlay)renderOverlay();
   }
  }catch(e){
   $("wsConnection").className="connection offline";$("wsConnection").innerHTML="<i></i>OFFLINE";
@@ -161,7 +168,7 @@ function renderKpis(){
  const completed=(d.questionStates||[]).filter(x=>["closed","revealed"].includes(x.phase)).length;
  const values=[
  ["REGISTRIERTE TEILNEHMER",d.participants||0],["AKTUELL AKTIV",d.activeParticipants||0],
- ["EINGEGANGENE STIMMEN",(d.votes||[]).length],["TEILNAHMEQUoTE",wsPct(n,d.participants||0)+" %"],
+ ["EINGEGANGENE STIMMEN",(d.votes||[]).length],["TEILNAHMEQUOTE",wsPct(n,d.participants||0)+" %"],
  ["FORTSCHRITT",completed+" / 12"]
  ];
  $("wsKpis").innerHTML=values.map(([label,n])=>'<div class="ws-kpi"><div class="ws-kpi-label">'+wsEsc(label)+'</div><strong>'+wsEsc(n)+'</strong></div>').join("");
