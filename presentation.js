@@ -205,6 +205,26 @@ function prLiveSalaryHistogram(step,responses){
  else if(step.phase==='revealed'&&Number.isFinite(Number(step.solution?.recommendedMin)))html+='<p class="pr-note-bubble">Fachlicher Orientierungsbereich: <strong>'+prEuro(step.solution.recommendedMin)+' – '+prEuro(step.solution.recommendedMax)+'</strong> (kein gesetzlicher Grenzwert).</p>';
  return html;
 }
+
+/* Chapter 4: anonymous live vote distribution + concise personal correctness.
+ * Detailed legal reasoning intentionally stays in the PowerPoint, not the public app. */
+function prBonusFeedbackHTML(step){
+ const own=step.myAnswer?.value;
+ const answeredCorrectly=typeof own==="boolean"&&typeof step.solution?.correct==="boolean"&&own===step.solution.correct;
+ const votes=Array.isArray(step.responses)?step.responses:[];
+ const correctClass=answeredCorrectly?"pr-bonus-correct":"pr-bonus-incorrect";
+ let html='<section class="pr-live-feedback pr-bonus-feedback" aria-label="Dein Ergebnis zu diesem HR-Fall">';
+ html+='<div class="pr-live-head"><div><p class="pr-eyebrow">HR-FALL '+step.seq+' VON 4 · ANTWORT GESPEICHERT</p><h3>Deine Auswertung.</h3></div><span class="pr-live-badge"><i></i> LIVE</span></div>';
+ html+='<div class="pr-bonus-verdict '+correctClass+'" role="status"><span class="pr-bonus-verdict-icon" aria-hidden="true">'+(answeredCorrectly?'✓':'×')+'</span><div><strong>'+(answeredCorrectly?'Richtig eingeschätzt!':'Leider falsch eingeschätzt.')+'</strong><p>Deine Antwort: '+(own===true?'Richtig':'Falsch')+'</p></div></div>';
+ html+='<div class="pr-live-metrics">'+prStats("Abgegebene Stimmen",votes.length)+prStats("Teilnahmequote",Math.min(100,Math.round(votes.length/Math.max(1,pr.public?.participants||votes.length)*100))+" %")+'</div>';
+ html+='<div class="pr-live-chart"><p class="pr-eyebrow">ABSTIMMUNG IM PLENUM</p><h3>Richtig oder Falsch?</h3>'+prResultRows(step,votes)+'</div>';
+ html+='<div class="pr-note-bubble"><strong>Die juristische Erklärung besprechen wir auf der PowerPoint-Folie.</strong></div>';
+ if(step.phase==='voting')html+='<div class="pr-actions">'+prButton("Antwort ändern","review-edit","ghost")+'<span class="pr-muted">Bis zum Schließen der Abstimmung möglich.</span></div>';
+ else html+='<p class="pr-note">Die Moderation öffnet die nächste Aufgabe.</p>';
+ html+='</section>';
+ return html;
+}
+
 function prInstantFeedbackHTML(step){
  const rows=Array.isArray(step.responses)?step.responses:[];
  const own=step.myAnswer?.value;
@@ -258,8 +278,9 @@ function prHistoryHTML(){
   }
   return '<div class="pr-history-card"><span class="pr-eyebrow">FRAGE '+x.seq+'</span><h4>'+prEscape(x.title)+'</h4><p>'+summary+'</p>'+
    (kind==='wordcloud'?prWordCloudHTML(rows,true):'')+
+   (x.chapter===4&&kind==='boolean'?prResultRows({kind:'boolean'},rows):'')+
    (kind==='benefits'?prBars([ {label:"Paket abgegeben",count:rows.length}],rows.length,false):'')+
-   (x.solution?'<div class="pr-note">'+prEscape(x.explanation||"")+'</div>':"")+'</div>';
+   (x.solution&&x.chapter!==4?'<div class="pr-note">'+prEscape(x.explanation||"")+'</div>':"")+'</div>';
  }).join("")+'</div>';
 }
 function prShowParticipant(){
@@ -267,7 +288,7 @@ function prShowParticipant(){
  if(!p)return;
  pr$("prName").textContent=pr.name||p.name||"du";
  pr$("prSessionName").textContent=p.sessionLabel||"";
- pr$("prStatus").textContent=(p.chapter===3&&p.step?.kind==="wordcloud"&&p.step?.myAnswer?"✓ Idee abgegeben · Live-Wörterwolke":p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
+ pr$("prStatus").textContent=(p.chapter===4&&p.step?.kind==="boolean"&&p.step?.myAnswer?"✓ Fall ausgewertet · Live-Ergebnis":p.chapter===3&&p.step?.kind==="wordcloud"&&p.step?.myAnswer?"✓ Idee abgegeben · Live-Wörterwolke":p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
  pr$("prChapterNav").innerHTML=prChapterMenu();
  const c=PR_CHAPTERS[p.chapter??0];
  pr$("prChapterDetail").innerHTML='<div class="pr-chap current"><strong>'+String(p.chapter??0).padStart(2,"0")+'</strong><small>'+prEscape(c.name)+'</small></div><p class="pr-chapter-info">'+prEscape(c.subtitle)+'. Die Moderation öffnet alle Aufgaben nacheinander.</p>';
@@ -297,6 +318,12 @@ function prShowParticipant(){
   return;
  }
  const hasAnswered=step.myAnswer!==null&&step.myAnswer!==undefined;
+ const bonusFeedback=step.chapter===4&&step.kind==='boolean'&&hasAnswered&&Array.isArray(step.responses)&&typeof step.solution?.correct==='boolean';
+ if(bonusFeedback&&(!pr.reviewEditing||!open)){
+  pr$("prCurrent").innerHTML='<p class="pr-eyebrow">KAPITEL 04 · FALL '+step.seq+' / 4</p><h2>'+prEscape(step.title)+'</h2>'+prBonusFeedbackHTML(step);
+  pr$("prResultHistory").innerHTML=prHistoryHTML();
+  return;
+ }
  const liveReview=[1,2].includes(step.chapter)&&hasAnswered&&Array.isArray(step.responses);
  if(liveReview&&(!pr.reviewEditing||!open)){
   const content='<p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+' · '+prEscape(c.name)+'</p><h2>'+prEscape(step.title)+'</h2>'+prInstantFeedbackHTML(step);
@@ -315,7 +342,7 @@ function prShowParticipant(){
   body+='<div class="pr-note-bubble">'+(step.phase==='voting'?'Die Auswahlzeit ist abgelaufen.':step.phase==='closed'?'Die Abstimmung ist geschlossen.':step.phase==='results'?'Das Abstimmungsergebnis ist freigegeben.':step.phase==='revealed'?'Auflösung freigegeben.':'Warte auf Freigabe.')+'</div>';
  }
  if(step.responses)body+='<div class="pr-card" style="background:#f8fbfb;box-shadow:none;margin-top:20px"><h3>Live-Ergebnisse · '+step.votes+' Stimmen</h3>'+prResultRows(step,step.responses)+'</div>';
- if(step.solution)body+=prLegalSolution(step);
+ if(step.solution&&step.chapter!==4)body+=prLegalSolution(step);
  pr$("prCurrent").innerHTML=body;
  pr$("prResultHistory").innerHTML=prHistoryHTML();
 }
@@ -356,11 +383,14 @@ function prAdminLive(){
   html+='<div class="pr-facts">'+prStats("Abstimmungsphase",a.phase)+prStats("Gültige Stimmen",responses.length)+'</div>';
   if(step.kind==='benefits')html+='<div class="pr-note">Benefit-Auswahl: '+prTimerLabel()+'</div>';
   if(a.phase==='voting')html+='<div class="pr-admin-live-actions">'+prButton("Abstimmung schließen","close","primary wide")+'</div>';
-  else if(a.phase==='closed')html+='<div class="pr-admin-live-actions">'+prButton("Ergebnisse zeigen","results","primary wide")+prButton("Direkt auflösen","reveal","ghost wide")+'</div>';
-  else if(a.phase==='results')html+='<div class="pr-admin-live-actions">'+prButton("Juristische Lösung zeigen","reveal","primary wide")+'</div>';
+  else if(a.phase==='closed')html+='<div class="pr-admin-live-actions">'+prButton("Ergebnisse zeigen","results","primary wide")+(step.chapter===4?"":prButton("Direkt auflösen","reveal","ghost wide"))+'</div>';
+  else if(a.phase==='results'&&step.chapter!==4)html+='<div class="pr-admin-live-actions">'+prButton("Juristische Lösung zeigen","reveal","primary wide")+'</div>';
   if(step.kind==='wordcloud'){
    html+='<div class="pr-admin-wordcloud"><p class="pr-eyebrow">LIVE · WÖRTERWOLKE</p>'+prWordCloudHTML(responses,true)+'</div>';
    if(a.phase==='revealed')html+='<p class="pr-note-bubble">'+prEscape(step.explanation||"")+'</p>';
+  }else if(step.chapter===4&&step.kind==='boolean'){
+   html+='<div class="pr-admin-wordcloud"><p class="pr-eyebrow">LIVE · STIMMENVERTEILUNG</p>'+prResultRows(step,responses)+
+    '<p class="pr-note">Teilnehmer sehen nach dem Abschicken nur ihre persönliche Bewertung und die Stimmenverteilung. Die ausführliche Auflösung erfolgt auf den Folien.</p></div>';
   }else if(a.phase==='results'||a.phase==='revealed'){
    html+='<div style="margin:17px 0">'+prResultRows(step,responses)+'</div>';
    if(a.phase==='revealed')html+=prLegalSolution(step);
@@ -373,7 +403,7 @@ function prAdminLive(){
 function prDashboardCard(step,answers,showSolution){
  let text='<div class="pr-dash-card"><p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+'</p><h3>'+prEscape(step.title)+'</h3>'+
  '<p>'+answers.length+' gültige Antworten</p>'+prResultRows(step,answers);
- if(showSolution&&step.solution&&step.kind!=='wordcloud')text+=prLegalSolution(step);
+ if(showSolution&&step.solution&&step.kind!=='wordcloud'&&step.chapter!==4)text+=prLegalSolution(step);
  return text+'</div>';
 }
 function prRenderDashboard(){
@@ -442,7 +472,7 @@ async function prSubmit(){
   ans={value:n};
  }else{if(pr.choice===null){prToast("Bitte zuerst eine Antwort wählen");return}ans={value:pr.choice}}
  pr.busy=true;
- try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;prToast(step.kind==='wordcloud'?"Deine Idee wurde gespeichert.":"Deine Antwort wurde gespeichert.");await prFetch();if([1,2].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
+ try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;prToast(step.kind==='wordcloud'?"Deine Idee wurde gespeichert.":"Deine Antwort wurde gespeichert.");await prFetch();if([1,2,4].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
  catch(e){prToast(e.message)}finally{pr.busy=false}
 }
 async function prAdminAction(action,options={}){
