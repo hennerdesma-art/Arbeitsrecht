@@ -142,8 +142,8 @@ function prLiveSalaryHistogram(step,responses){
  }).join('');
  html+='</div></div><div class="pr-hist-axis"><span>'+prEuro(min)+'</span><span>'+prEuro(max)+'</span></div>';
  html+='<div class="pr-live-legend"><span><i class="pr-legend-bar"></i>Gruppenverteilung</span><span><i class="pr-legend-mine"></i>Deine Gehaltsklasse</span></div>';
- if(Number.isFinite(Number(step.solution?.minimum)))html+='<p class="pr-note-bubble">Tarifliche Mindestgrenze: <strong>'+prEuro(step.solution.minimum)+'</strong>. Niedrigere Angebote sind im geschilderten Fall nicht tarifkonform.</p>';
- else if(Number.isFinite(Number(step.solution?.recommendedMin)))html+='<p class="pr-note-bubble">Fachlicher Orientierungsbereich: <strong>'+prEuro(step.solution.recommendedMin)+' – '+prEuro(step.solution.recommendedMax)+'</strong> (kein gesetzlicher Grenzwert).</p>';
+ if(step.phase==='revealed'&&Number.isFinite(Number(step.solution?.minimum)))html+='<p class="pr-note-bubble">Tarifliche Mindestgrenze: <strong>'+prEuro(step.solution.minimum)+'</strong>. Niedrigere Angebote sind im geschilderten Fall nicht tarifkonform.</p>';
+ else if(step.phase==='revealed'&&Number.isFinite(Number(step.solution?.recommendedMin)))html+='<p class="pr-note-bubble">Fachlicher Orientierungsbereich: <strong>'+prEuro(step.solution.recommendedMin)+' – '+prEuro(step.solution.recommendedMax)+'</strong> (kein gesetzlicher Grenzwert).</p>';
  return html;
 }
 function prInstantFeedbackHTML(step){
@@ -153,17 +153,19 @@ function prInstantFeedbackHTML(step){
  const isSalary=step.kind==='salary';
  const ownLabel=isSalary?prEuro(own):own===true?"Richtig":own===false?"Falsch":String(own??"");
  let feedback="";
- if(step.kind==='boolean'&&typeof step.solution?.correct==='boolean')
+ const released=step.phase==='revealed'&&step.solution!==null&&step.solution!==undefined;
+ if(released&&step.kind==='boolean'&&typeof step.solution?.correct==='boolean')
   feedback=step.solution.correct===own?"Deine Einschätzung war richtig.":"Deine Einschätzung war nicht richtig.";
- else if(isSalary&&Number.isFinite(Number(step.solution?.minimum)))
+ else if(released&&isSalary&&Number.isFinite(Number(step.solution?.minimum)))
   feedback=Number(own)<Number(step.solution.minimum)?"Dein Betrag liegt unter dem tariflichen Mindestgehalt.":"Dein Betrag liegt nicht unter der tariflichen Untergrenze.";
- else if(isSalary)feedback="Es gibt hier mehrere fachlich vertretbare Entscheidungen – vergleiche deine Wahl mit der Gruppe.";
+ else if(released&&isSalary)feedback="Es gibt hier mehrere fachlich vertretbare Entscheidungen – vergleiche deine Wahl mit der Gruppe.";
  let html='<section class="pr-live-feedback" aria-label="Deine persönliche Auswertung">';
  html+='<div class="pr-live-head"><div><p class="pr-eyebrow">✓ ANTWORT GESPEICHERT · INDIVIDUELLE AUSWERTUNG</p><h3>So hat die Gruppe entschieden.</h3></div><span class="pr-live-badge"><i></i> LIVE</span></div>';
  html+='<div class="pr-live-metrics">'+prStats("Deine Antwort",ownLabel)+prStats("Abgegebene Stimmen",total)+prStats("Aktuelle Beteiligung",Math.min(100,Math.round(total/Math.max(1,pr.public?.participants||total)*100))+" %")+'</div>';
  html+='<div class="pr-live-chart">'+(isSalary?prLiveSalaryHistogram(step,rows):prResultRows(step,rows))+'</div>';
  if(feedback)html+='<p class="pr-feedback-insight">'+prEscape(feedback)+'</p>';
- html+=prLegalSolution(step);
+ if(released)html+=prLegalSolution(step);
+ else html+='<div class="pr-note-bubble"><strong>Auflösung noch nicht freigegeben.</strong> Die Moderation zeigt die richtige Antwort und die Rechtsgrundlagen später für alle an. Bis dahin siehst du nur die Live-Ergebnisse.</div>';
  html+='<details class="pr-review-original"><summary>Die ursprüngliche Fragestellung anzeigen</summary><p>'+prEscape(step.prompt)+'</p></details>';
  if(step.phase==='voting')html+='<div class="pr-actions">'+prButton("Antwort ändern","review-edit","ghost")+'<span class="pr-muted">Bis zum Schließen der Frage möglich.</span></div>';
  else html+='<div class="pr-note-bubble">Die Abstimmung ist abgeschlossen. Die nächste Frage wird automatisch von der Moderation geöffnet.</div>';
@@ -205,7 +207,7 @@ function prShowParticipant(){
  if(!p)return;
  pr$("prName").textContent=pr.name||p.name||"du";
  pr$("prSessionName").textContent=p.sessionLabel||"";
- pr$("prStatus").textContent=([1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Deine Auswertung ist live":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
+ pr$("prStatus").textContent=(p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
  pr$("prChapterNav").innerHTML=prChapterMenu();
  const c=PR_CHAPTERS[p.chapter??0];
  pr$("prChapterDetail").innerHTML='<div class="pr-chap current"><strong>'+String(p.chapter??0).padStart(2,"0")+'</strong><small>'+prEscape(c.name)+'</small></div><p class="pr-chapter-info">'+prEscape(c.subtitle)+'. Die Moderation öffnet alle Aufgaben nacheinander.</p>';
@@ -226,7 +228,7 @@ function prShowParticipant(){
  if(mine&&step.kind==='benefits'&&!pr.localEdited){pr.items=Array.isArray(mine.items)?[...mine.items]:[];pr.cash=Number(mine.cash||0)}
  const open=step.phase==='voting'&&!(step.kind==='benefits'&&prSecondsLeft()===0);
  const hasAnswered=step.myAnswer!==null&&step.myAnswer!==undefined;
- const liveReview=[1,2].includes(step.chapter)&&hasAnswered&&Array.isArray(step.responses)&&step.solution!==null&&step.solution!==undefined;
+ const liveReview=[1,2].includes(step.chapter)&&hasAnswered&&Array.isArray(step.responses);
  if(liveReview&&(!pr.reviewEditing||!open)){
   const content='<p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+' · '+prEscape(c.name)+'</p><h2>'+prEscape(step.title)+'</h2>'+prInstantFeedbackHTML(step);
   pr$("prCurrent").innerHTML=content;
