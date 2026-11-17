@@ -267,6 +267,37 @@ function prBonusFeedbackHTML(step){
  return html;
 }
 
+
+/* Chapter 5 / Rights Twists: reveal anonymous results immediately, but never legal answers until moderator release. */
+function prTwistLiveFeedbackHTML(step){
+ const responses=Array.isArray(step.responses)?step.responses:[];
+ const dual=step.kind==="dual_choice";
+ let ownText="";
+ if(dual){
+  ownText=(step.context?.questions||[]).map((q,i)=>{
+   const selected=step.myAnswer?.[q.id]??"–";
+   return '<span><strong>Frage '+(i+1)+':</strong> '+prEscape(selected)+'</span>';
+  }).join("");
+ }else{
+  const selected=step.myAnswer?.value??"–";
+  ownText='<span><strong>Deine Antwort:</strong> '+prEscape(selected)+'</span>';
+ }
+ const revealed=step.phase==="revealed"&&step.solution!==null&&step.solution!==undefined;
+ let html='<section class="pr-live-feedback pr-twist-feedback" aria-label="Live-Abstimmung zu diesem Rechts-Twist">';
+ html+='<div class="pr-live-head"><div><p class="pr-eyebrow">✓ ANTWORT GESPEICHERT · KAPITEL 5</p><h3>So hat das Plenum abgestimmt.</h3></div><span class="pr-live-badge"><i></i> LIVE</span></div>';
+ html+='<div class="pr-twist-my-vote">'+ownText+'</div>';
+ html+='<div class="pr-live-metrics">'+prStats("Abgegebene Stimmen",responses.length)+
+ prStats("Beteiligung",Math.min(100,Math.round(100*responses.length/Math.max(1,pr.public?.participants||responses.length)))+" %")+'</div>';
+ html+='<div class="pr-live-chart"><p class="pr-eyebrow">LIVE-ERGEBNIS · '+(dual?"BEIDE TEILFRAGEN":"DIESE FRAGE")+'</p>'+prResultRows(step,responses)+'</div>';
+ if(revealed)html+=prLegalSolution(step);
+ else html+='<div class="pr-note-bubble"><strong>Die Auflösung bleibt vorerst verborgen.</strong> Die Moderation zeigt die richtigen Antworten und die Rechtsgrundlagen erst nach der gemeinsamen Auswertung auf den Folien und in der App.</div>';
+ if(step.phase==="voting")html+='<div class="pr-actions">'+prButton("Antwort ändern","review-edit","ghost")+
+ '<span class="pr-muted">Solange die Abstimmung geöffnet ist.</span></div>';
+ else html+='<p class="pr-note">Die Abstimmung ist geschlossen. Die nächste Frage wird von der Moderation geöffnet.</p>';
+ html+='<p class="pr-note">Die Diagramme aktualisieren sich automatisch, wenn weitere Teilnehmer abstimmen.</p></section>';
+ return html;
+}
+
 function prInstantFeedbackHTML(step){
  const rows=Array.isArray(step.responses)?step.responses:[];
  const own=step.myAnswer?.value;
@@ -340,7 +371,7 @@ function prShowParticipant(){
  if(!p)return;
  pr$("prName").textContent=pr.name||p.name||"du";
  pr$("prSessionName").textContent=p.sessionLabel||"";
- pr$("prStatus").textContent=(p.chapter===4&&p.step?.kind==="boolean"&&p.step?.myAnswer?"✓ Fall ausgewertet · Live-Ergebnis":p.chapter===3&&p.step?.kind==="wordcloud"&&p.step?.myAnswer?"✓ Idee abgegeben · Live-Wörterwolke":p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
+ pr$("prStatus").textContent=(p.chapter===5&&["choice","dual_choice"].includes(p.step?.kind)&&p.step?.myAnswer?"✓ Live-Ergebnisse verfügbar":p.chapter===4&&p.step?.kind==="boolean"&&p.step?.myAnswer?"✓ Fall ausgewertet · Live-Ergebnis":p.chapter===3&&p.step?.kind==="wordcloud"&&p.step?.myAnswer?"✓ Idee abgegeben · Live-Wörterwolke":p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
  pr$("prChapterNav").innerHTML=prChapterMenu();
  const c=PR_CHAPTERS[p.chapter??0];
  pr$("prChapterDetail").innerHTML='<div class="pr-chap current"><strong>'+String(p.chapter??0).padStart(2,"0")+'</strong><small>'+prEscape(c.name)+'</small></div><p class="pr-chapter-info">'+prEscape(c.subtitle)+'. Die Moderation öffnet alle Aufgaben nacheinander.</p>';
@@ -374,6 +405,13 @@ function prShowParticipant(){
   return;
  }
  const hasAnswered=step.myAnswer!==null&&step.myAnswer!==undefined;
+ const liveTwist=step.chapter===5&&(step.kind==='choice'||step.kind==='dual_choice')&&hasAnswered&&
+  Array.isArray(step.responses)&&(step.kind!=='dual_choice'||(step.myAnswer?.q1&&step.myAnswer?.q2));
+ if(liveTwist&&(!pr.reviewEditing||!open)){
+  pr$("prCurrent").innerHTML='<p class="pr-eyebrow">KAPITEL 05 · RECHTS-TWIST '+(step.seq-1)+' / 3</p><h2>'+prEscape(step.title)+'</h2>'+prTwistLiveFeedbackHTML(step);
+  pr$("prResultHistory").innerHTML=prHistoryHTML();
+  return;
+ }
  const bonusFeedback=step.chapter===4&&step.kind==='boolean'&&hasAnswered&&Array.isArray(step.responses)&&typeof step.solution?.correct==='boolean';
  if(bonusFeedback&&(!pr.reviewEditing||!open)){
   pr$("prCurrent").innerHTML='<p class="pr-eyebrow">KAPITEL 04 · FALL '+step.seq+' / 4</p><h2>'+prEscape(step.title)+'</h2>'+prBonusFeedbackHTML(step);
@@ -543,7 +581,13 @@ async function prSubmit(){
  pr.busy=true;
  try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;
   if(step.kind==='wordcloud')pr.ideaDraft="";
-  prToast(step.kind==='wordcloud'?"Idee hinzugefügt – du kannst weitere eintragen.":"Deine Antwort wurde gespeichert.");await prFetch();if([1,2,4].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
+  prToast(step.kind==='wordcloud'?"Idee hinzugefügt – du kannst weitere eintragen.":"Deine Antwort wurde gespeichert.");
+  // Get the post-vote chart immediately, without waiting for the regular 2.5s poll.
+  if(step.chapter===5&&(step.kind==='choice'||step.kind==='dual_choice')){
+   try{pr.public=await prRpc("arb_pr_public",{p_device:pr.device});prShowParticipant()}
+   catch{await prFetch()}
+  }else await prFetch();
+  if([1,2,4,5].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
  catch(e){prToast(e.message)}finally{pr.busy=false}
 }
 async function prAdminAction(action,options={}){
