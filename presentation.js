@@ -21,7 +21,7 @@ const pr={
  name:localStorage.getItem("nxt_name")||"",device:localStorage.getItem("nxt_device")||"",
  password:sessionStorage.getItem("nxt_admin")||"",view:"join",public:null,admin:null,clock:null,
  adminChapter:0,adminDashboard:0,busy:false,polling:false,choice:null,salary:null,items:[],cash:0,
- stepId:null,overlay:false,lastError:"",joinedSession:null
+ stepId:null,overlay:false,lastError:"",joinedSession:null,reviewEditing:false
 };
 if(!pr.device){pr.device=crypto.randomUUID();localStorage.setItem("nxt_device",pr.device)}
 function prEscape(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -120,6 +120,57 @@ function prBars(rows,total,multiple){
   return '<div class="pr-result-bar"><div><span>'+prEscape(r.label)+'</span><strong>'+r.count+' · '+percentage+' %</strong></div><div class="pr-result-track"><span style="width:'+Math.min(100,percentage)+'%"></span></div></div>';
  }).join('')+(multiple?'<p class="pr-note">Mehrfachauswahl: Prozentwerte beziehen sich auf abgegebene Pakete und können zusammen mehr als 100 % ergeben.</p>':'');
 }
+
+/* Instant feedback for voting participants in chapters 1 and 2. All results are anonymous. */
+function prLiveSalaryHistogram(step,responses){
+ const c=step.context||{},min=Number(c.min),max=Number(c.max),increment=Number(c.step||1000);
+ const values=responses.map(row=>Number(row.answer?.value)).filter(n=>Number.isFinite(n)&&n>=min&&n<=max).sort((a,b)=>a-b);
+ if(!values.length)return '<p class="pr-note">Die erste Stimme wird gerade geladen.</p>';
+ const bins=Math.max(1,Math.min(10,Math.floor((max-min)/increment)+1));
+ const width=(max-min+increment)/bins,counts=Array(bins).fill(0);
+ for(const value of values)counts[Math.min(bins-1,Math.floor((value-min)/width))]++;
+ const peak=Math.max(1,...counts),avg=values.reduce((a,b)=>a+b,0)/values.length;
+ const median=values.length%2?values[(values.length-1)/2]:(values[values.length/2-1]+values[values.length/2])/2;
+ const myValue=Number(step.myAnswer?.value);
+ let html='<div class="pr-live-metrics">'+prStats("Antworten",values.length)+prStats("Median",prEuro(median))+prStats("Durchschnitt",prEuro(avg))+'</div>';
+ html+='<div class="pr-live-hist-scroll"><div class="pr-live-hist" role="img" aria-label="Histogramm aller abgegebenen Gehaltsvorschläge. '+values.length+' Stimmen, Median '+prEuro(median)+'.">';
+ html+=counts.map((count,i)=>{
+  const start=min+i*width,stop=Math.min(max,min+(i+1)*width);
+  const me=myValue>=start&&(i===bins-1?myValue<=max:myValue<min+(i+1)*width);
+  const height=count?Math.max(5,Math.round(count/peak*100)):0;
+  return '<div class="pr-hist-column '+(me?'is-mine':'')+'" title="'+prEuro(start)+' bis '+prEuro(stop)+': '+count+' Stimmen"><span class="pr-hist-value">'+(count?count:'')+'</span><div class="pr-hist-column-track"><span style="height:'+height+'%"></span></div></div>';
+ }).join('');
+ html+='</div></div><div class="pr-hist-axis"><span>'+prEuro(min)+'</span><span>'+prEuro(max)+'</span></div>';
+ html+='<div class="pr-live-legend"><span><i class="pr-legend-bar"></i>Gruppenverteilung</span><span><i class="pr-legend-mine"></i>Deine Gehaltsklasse</span></div>';
+ if(Number.isFinite(Number(step.solution?.minimum)))html+='<p class="pr-note-bubble">Tarifliche Mindestgrenze: <strong>'+prEuro(step.solution.minimum)+'</strong>. Niedrigere Angebote sind im geschilderten Fall nicht tarifkonform.</p>';
+ else if(Number.isFinite(Number(step.solution?.recommendedMin)))html+='<p class="pr-note-bubble">Fachlicher Orientierungsbereich: <strong>'+prEuro(step.solution.recommendedMin)+' – '+prEuro(step.solution.recommendedMax)+'</strong> (kein gesetzlicher Grenzwert).</p>';
+ return html;
+}
+function prInstantFeedbackHTML(step){
+ const rows=Array.isArray(step.responses)?step.responses:[];
+ const own=step.myAnswer?.value;
+ const total=rows.length;
+ const isSalary=step.kind==='salary';
+ const ownLabel=isSalary?prEuro(own):own===true?"Richtig":own===false?"Falsch":String(own??"");
+ let feedback="";
+ if(step.kind==='boolean'&&typeof step.solution?.correct==='boolean')
+  feedback=step.solution.correct===own?"Deine Einschätzung war richtig.":"Deine Einschätzung war nicht richtig.";
+ else if(isSalary&&Number.isFinite(Number(step.solution?.minimum)))
+  feedback=Number(own)<Number(step.solution.minimum)?"Dein Betrag liegt unter dem tariflichen Mindestgehalt.":"Dein Betrag liegt nicht unter der tariflichen Untergrenze.";
+ else if(isSalary)feedback="Es gibt hier mehrere fachlich vertretbare Entscheidungen – vergleiche deine Wahl mit der Gruppe.";
+ let html='<section class="pr-live-feedback" aria-label="Deine persönliche Auswertung">';
+ html+='<div class="pr-live-head"><div><p class="pr-eyebrow">✓ ANTWORT GESPEICHERT · INDIVIDUELLE AUSWERTUNG</p><h3>So hat die Gruppe entschieden.</h3></div><span class="pr-live-badge"><i></i> LIVE</span></div>';
+ html+='<div class="pr-live-metrics">'+prStats("Deine Antwort",ownLabel)+prStats("Abgegebene Stimmen",total)+prStats("Aktuelle Beteiligung",Math.min(100,Math.round(total/Math.max(1,pr.public?.participants||total)*100))+" %")+'</div>';
+ html+='<div class="pr-live-chart">'+(isSalary?prLiveSalaryHistogram(step,rows):prResultRows(step,rows))+'</div>';
+ if(feedback)html+='<p class="pr-feedback-insight">'+prEscape(feedback)+'</p>';
+ html+=prLegalSolution(step);
+ html+='<details class="pr-review-original"><summary>Die ursprüngliche Fragestellung anzeigen</summary><p>'+prEscape(step.prompt)+'</p></details>';
+ if(step.phase==='voting')html+='<div class="pr-actions">'+prButton("Antwort ändern","review-edit","ghost")+'<span class="pr-muted">Bis zum Schließen der Frage möglich.</span></div>';
+ else html+='<div class="pr-note-bubble">Die Abstimmung ist abgeschlossen. Die nächste Frage wird automatisch von der Moderation geöffnet.</div>';
+ html+='<p class="pr-note">Jede Browserkennung zählt einmal. Die Balken aktualisieren sich laufend; einzelne Namen werden nicht angezeigt.</p></section>';
+ return html;
+}
+
 function prLegalSolution(step){
  if(!step?.solution)return '';
  const s=step.solution;
@@ -154,7 +205,7 @@ function prShowParticipant(){
  if(!p)return;
  pr$("prName").textContent=pr.name||p.name||"du";
  pr$("prSessionName").textContent=p.sessionLabel||"";
- pr$("prStatus").textContent=(p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
+ pr$("prStatus").textContent=([1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Deine Auswertung ist live":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
  pr$("prChapterNav").innerHTML=prChapterMenu();
  const c=PR_CHAPTERS[p.chapter??0];
  pr$("prChapterDetail").innerHTML='<div class="pr-chap current"><strong>'+String(p.chapter??0).padStart(2,"0")+'</strong><small>'+prEscape(c.name)+'</small></div><p class="pr-chapter-info">'+prEscape(c.subtitle)+'. Die Moderation öffnet alle Aufgaben nacheinander.</p>';
@@ -166,7 +217,7 @@ function prShowParticipant(){
  }
  if(pr.stepId!==step.id){
   pr.stepId=step.id;pr.choice=null;pr.salary=Number(step.context?.default??step.context?.min??0);
-  pr.items=[];pr.cash=0;pr.localEdited=false;
+  pr.items=[];pr.cash=0;pr.localEdited=false;pr.reviewEditing=false;
  }
  const mine=step.myAnswer;
  if(mine&&pr.choice===null&&step.kind==='boolean')pr.choice=mine.value;
@@ -174,6 +225,13 @@ function prShowParticipant(){
  if(mine&&step.kind==='salary'&&!pr.localEdited)pr.salary=Number(mine.value);
  if(mine&&step.kind==='benefits'&&!pr.localEdited){pr.items=Array.isArray(mine.items)?[...mine.items]:[];pr.cash=Number(mine.cash||0)}
  const open=step.phase==='voting'&&!(step.kind==='benefits'&&prSecondsLeft()===0);
+ const hasAnswered=step.myAnswer!==null&&step.myAnswer!==undefined;
+ const liveReview=[1,2].includes(step.chapter)&&hasAnswered&&Array.isArray(step.responses)&&step.solution!==null&&step.solution!==undefined;
+ if(liveReview&&(!pr.reviewEditing||!open)){
+  const content='<p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+' · '+prEscape(c.name)+'</p><h2>'+prEscape(step.title)+'</h2>'+prInstantFeedbackHTML(step);
+  pr$("prCurrent").innerHTML=content;
+  pr$("prResultHistory").innerHTML=prHistoryHTML();return;
+ }
  let body='<p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+' · '+prEscape(c.name)+'</p><h2>'+prEscape(step.title)+'</h2><p class="pr-statement">'+prEscape(step.prompt)+'</p>';
  if(step.kind==='benefits')body+=prBudgetHTML(step,!open);
  else if(step.kind==='salary')body+=prSalaryHTML(step);
@@ -306,7 +364,7 @@ async function prSubmit(){
   ans={value:n};
  }else{if(pr.choice===null){prToast("Bitte zuerst eine Antwort wählen");return}ans={value:pr.choice}}
  pr.busy=true;
- try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;prToast("Deine Antwort wurde gespeichert.");await prFetch()}
+ try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;pr.reviewEditing=false;prToast("Deine Antwort wurde gespeichert.");await prFetch();if([1,2].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
  catch(e){prToast(e.message)}finally{pr.busy=false}
 }
 async function prAdminAction(action,options={}){
@@ -362,6 +420,7 @@ document.addEventListener("click",async e=>{
   if(pr.admin?.phase==='voting'&&!confirm("Die aktuelle Abstimmung wird verlassen. Kapitel trotzdem öffnen?"))return;
   await prAdminAction("chapter",{p_chapter:chapter});return;
  }
+ if(b.dataset.pr==="review-edit"){pr.reviewEditing=true;pr.localEdited=false;prShowParticipant();return}
  if(b.dataset.pr==="step"){await prAdminAction("step",{p_step:b.dataset.step});return}
  if(b.dataset.pr==="submit"){await prSubmit();return}
  if(["close","results","reveal","publish","wait"].includes(b.dataset.pr)){await prAdminAction(b.dataset.pr);return}
@@ -388,7 +447,7 @@ pr$("prNewSession").addEventListener("submit",async e=>{
 prRender();
 if(pr.name)prSetView("participant");
 prFetch(false);
-setInterval(()=>prFetch(),3500);
+setInterval(()=>prFetch(),2500);
 setInterval(()=>{
  const label=pr$("prTimerNote");if(label)label.textContent=prTimerLabel();
 },1000);
