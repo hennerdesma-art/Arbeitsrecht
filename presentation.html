@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#008b93"><meta name="description" content="NXT Arbeitsrecht · sechs interaktive Kapitel und Live-Präsentationssteuerung">
+<title>NXT | Vergütungspyramide · Live</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="presentation.css">
+</head><body class="pr-body">
+<div class="glow glow-a"></div><div class="glow glow-b"></div>
+<header class="topbar pr-topbar"><a class="brand" href="index.html" aria-label="NXT Startseite"><img src="assets/nxt-logo.svg" alt="NXT Reutlingen University"></a>
+<div class="pr-topactions"><span id="prConnection" class="connection"><i></i>Verbinde …</span><button id="prAdminToggle" class="ghost small" type="button">Admin ↗</button></div></header>
+<main class="pr-container">
+<section id="prJoin" class="pr-intro">
+ <div><p class="pr-eyebrow">NXT · LIVE LEARNING EXPERIENCE</p><h1>Vergütung.<br><em>Verstehen.</em><br>Mitentscheiden.</h1>
+ <p class="pr-lead">Sechs Kapitel. Eine gemeinsame Lernreise – von der Einstiegsfrage bis zur Cafeteria-Challenge. Die Moderation führt euch live durch jede Aufgabe.</p>
+ <div id="prIntroChapters" class="pr-pyramid"></div></div>
+ <div class="pr-card pr-joincard"><p class="pr-eyebrow">DEIN ZUGANG</p><h2>Sei dabei.</h2><p>Ein Name oder Spitzname genügt. Dein Gerät merkt sich deine Teilnahme.</p>
+ <form id="prJoinForm"><label for="prNickname">NAME ODER PSEUDONYM</label><input id="prNickname" minlength="2" maxlength="30" required autocomplete="nickname" placeholder="Wie dürfen wir dich nennen?"><button type="submit" class="primary full">Präsentation beitreten ↗</button></form>
+ <p class="pr-note">Keine E-Mail erforderlich. Die Antworten werden während der Veranstaltung pseudonym gespeichert.</p></div>
+</section>
+<section id="prParticipant" class="hidden">
+ <div class="pr-hero"><div><p class="pr-eyebrow">NXT · VERGÜTUNGSPYRAMIDE</p><h1>Hallo, <span id="prName">du</span><span class="pr-accent">.</span></h1><p id="prSessionName" class="pr-muted">Präsentationssitzung</p></div><span id="prStatus" class="pr-pill">Warten auf Moderation</span></div>
+ <div id="prChapterNav" class="pr-chapter-nav"></div>
+ <div class="pr-main-grid"><div><article id="prCurrent" class="pr-card pr-current"></article><div id="prResultHistory" class="pr-history"></div></div>
+ <aside class="pr-sidebar"><div class="pr-card"><p class="pr-eyebrow">DEIN LERNPFAD</p><div id="prChapterDetail"></div></div><div class="pr-card pr-small"><p class="pr-eyebrow">LIVE-SESSION</p><div id="prParticipantStats"></div></div></aside></div>
+</section>
+<section id="prAdmin" class="hidden pr-admin">
+ <div class="pr-hero"><div><p class="pr-eyebrow">NXT · MODERATOR CONTROL CENTER</p><h1>Presentation <em>Control.</em></h1><p class="pr-muted">Kapitel öffnen, Fragen steuern und Ergebnisse freigeben.</p></div>
+ <button id="prAdminBack" class="ghost" type="button">← Teilnehmeransicht</button></div>
+ <div id="prAdminLogin" class="pr-card pr-login"><p class="pr-eyebrow">GESCHÜTZTER ZUGANG</p><h2>Administrator</h2><p>Verwende das bestehende Admin-Passwort dieser Anwendung.</p>
+ <form id="prAdminForm"><label for="prAdminPassword">PASSWORT</label><input type="password" id="prAdminPassword" required autocomplete="current-password"><button type="submit" class="primary full">Anmelden ↗</button></form></div>
+ <div id="prAdminContent" class="hidden">
+  <div id="prKpis" class="pr-kpis"></div>
+  <div class="pr-admin-layout"><div><div class="pr-card"><div class="pr-section-title"><div><p class="pr-eyebrow">01 · KAPITELSTEUERUNG</p><h2>Sechs Kapitel.</h2></div><span id="prAdminSessionTag" class="pr-pill">Live</span></div><div id="prAdminChapters" class="pr-admin-chapters"></div></div>
+  <div class="pr-card"><div class="pr-section-title"><div><p class="pr-eyebrow">02 · FRAGEN UND SPIELE</p><h2 id="prAdminChapterTitle">Aufgaben</h2></div></div><div id="prAdminSteps"></div></div></div>
+  <div><div class="pr-card pr-sticky"><p class="pr-eyebrow">03 · LIVE-REGIE</p><h2 id="prNowTitle">Warten auf Auswahl</h2><div id="prAdminLive"></div></div>
+  <div class="pr-card"><p class="pr-eyebrow">SESSION-VERWALTUNG</p><form id="prNewSession"><label for="prNewSessionName">NEUE SESSION</label><input id="prNewSessionName" minlength="3" maxlength="90" placeholder="z. B. Hochschulpräsentation Gruppe 6"><label class="pr-check"><input id="prDemo" type="checkbox" checked> Als Demo-Sitzung markieren</label><button class="ghost full" type="submit">Neue Session anlegen</button></form><button id="prFinish" class="ghost full pr-mt" type="button">Präsentation abschließen</button><button id="prLogout" class="ghost full pr-mt" type="button">Admin abmelden</button></div></div></div>
+  <div class="pr-card pr-analytics"><div class="pr-section-title"><div><p class="pr-eyebrow">04 · PRÄSENTATIONS-DASHBOARD</p><h2>Lecture Analytics.</h2></div><button id="prPresent" class="ghost small" type="button">⛶ Präsentieren</button></div><div id="prDashboard"></div></div>
+ </div>
+</section></main>
+<div id="prToast" class="toast hidden" role="status" aria-live="polite"></div>
+<div id="prOverlay" class="pr-overlay hidden" role="dialog" aria-modal="true" aria-label="Ergebnispräsentation"><div class="pr-overlay-inner"><div class="pr-overlay-bar"><span class="pr-eyebrow">NXT · LIVE ANALYTICS</span><div><button id="prFullScreen" class="ghost small">⛶ Vollbild</button><button id="prOverlayClose" class="ghost small">Schließen ×</button></div></div><div id="prOverlayContent"></div></div></div>
+<footer><span>© NXT · REUTLINGEN UNIVERSITY</span><span>THEMA 6 · VERGÜTUNG & BENEFITS</span></footer>
+<script defer src="presentation.js"></script>
+</body></html>
