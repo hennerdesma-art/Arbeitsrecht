@@ -17,6 +17,12 @@ for(const test of ["data-benefit","prBudgetTotal","data-cash","prSalaryUpdate","
  assert.ok(code.includes(test),"Missing interaction "+test);
 for(const design of ["#008b93","#0d2832",".pr-benefit",".pr-dash-card",".pr-live-feedback",".pr-live-hist"])
  assert.ok(css.includes(design),"Missing NXT design "+design);
+for(const feature of ["prWordIdeaCheck","prWordCloudData","prWordCloudHTML","prWordParticipantHTML","pr-word-results","word-edit","step.kind==='wordcloud'"]){
+ assert.ok(code.includes(feature),"Chapter 3 missing: "+feature);
+}
+assert.match(code,/pr\.ideaDraft=e\.target\.value/,"Word cloud draft must be retained across polls");
+assert.match(code,/pr\.wordViewPhase===step\.phase&&\(!step\.myAnswer\|\|pr\.wordEditing\)/,"Typing must not be interrupted by live polls");
+assert.match(css,/\.pr-word-cloud/,"NXT responsive word cloud design");
 assert.match(html,/nxt-logo\.svg/);
 assert.match(code,/\[1,2\]\.includes\(step\.chapter\)/,"Instant results are limited to chapters 1 and 2");
 assert.match(code,/step\.myAnswer!==null/,"Require saved vote before showing feedback");
