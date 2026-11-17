@@ -166,7 +166,7 @@ function prShowParticipant(){
  }
  if(pr.stepId!==step.id){
   pr.stepId=step.id;pr.choice=null;pr.salary=Number(step.context?.default??step.context?.min??0);
-  pr.items=[];pr.cash=0;
+  pr.items=[];pr.cash=0;pr.localEdited=false;
  }
  const mine=step.myAnswer;
  if(mine&&pr.choice===null&&step.kind==='boolean')pr.choice=mine.value;
