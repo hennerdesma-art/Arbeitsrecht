@@ -192,5 +192,5 @@
 .pr-admin-wordcloud{margin-top:18px;padding:14px;border:1px solid #dbeae6;border-radius:14px;background:#f8fbfa}
 .pr-admin-wordcloud .pr-word-cloud{min-height:160px;padding:17px 9px}
 .pr-history-card .pr-word-cloud{margin-top:14px}
-@media(max-width:660px){.pr-word-cloud{min-height:200px;padding:20px 9px;column-gap:11px;row-gap:13px}.pr-word-term{font-size:min(10vw,inherit)}.pr-word-meta{gap:7px}.pr-lena-case{padding:15px}}
+@media(max-width:660px){.pr-word-cloud{min-height:200px;padding:20px 9px;column-gap:11px;row-gap:13px}.pr-word-term{font-size:min(var(--pr-word-size),9vw)!important}.pr-word-meta{gap:7px}.pr-lena-case{padding:15px}}
 @media(prefers-reduced-motion:reduce){.pr-word-term{transition:none}.pr-word-term:hover{transform:none}}
