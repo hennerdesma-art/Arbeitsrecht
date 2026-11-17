@@ -97,22 +97,30 @@ function prSalaryHTML(step){
 
 /* Chapter 3 | brainstorm answers are grouped as short, normalized phrases. */
 function prWordIdeaCheck(value){
- const normalized=String(value??"").normalize("NFKC").trim().replace(/\s+/gu," ");
- const words=normalized?normalized.split(" "):[];
- return {text:normalized,words:words.length,valid:words.length>=2&&words.length<=3&&normalized.length>=4&&normalized.length<=70&&!/[<>\u0000-\u001f\u007f]/u.test(normalized)};
+ const text=String(value??"").normalize("NFKC").trim().replace(/\s+/gu," ");
+ return {text,words:text?text.split(" ").length:0,
+  valid:text.length>=1&&text.length<=100&&!/[<>\u0000-\u001f\u007f]/u.test(text)};
+}
+function prOwnWordIdeas(answer){
+ if(Array.isArray(answer?.items))return answer.items.filter(v=>typeof v==="string"&&prWordIdeaCheck(v).valid);
+ if(typeof answer?.value==="string"&&prWordIdeaCheck(answer.value).valid)return [answer.value];
+ return [];
+}
+function prWordCloudEntries(responses){
+ return (Array.isArray(responses)?responses:[]).flatMap(item=>prOwnWordIdeas(item?.answer));
 }
 function prWordCloudData(responses){
  const frequency=new Map();
- for(const item of Array.isArray(responses)?responses:[]){
-  const idea=prWordIdeaCheck(item?.answer?.value);
+ for(const value of prWordCloudEntries(responses)){
+  const idea=prWordIdeaCheck(value);
   if(!idea.valid)continue;
   const key=idea.text.toLocaleLowerCase("de-DE").replace(/[.,!?;:„“"’']/gu,"").trim();
   if(!key)continue;
-  const entry=frequency.get(key);
-  if(entry){entry.count++}
+  const current=frequency.get(key);
+  if(current)current.count++;
   else frequency.set(key,{label:idea.text,count:1,key});
  }
- return [...frequency.values()].sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label,"de"));
+ return [...frequency.values()].sort((x,y)=>y.count-x.count||x.label.localeCompare(y.label,"de"));
 }
 function prWordCloudHTML(responses,compact=false){
  const terms=prWordCloudData(responses),total=terms.reduce((n,term)=>n+term.count,0);
@@ -128,30 +136,34 @@ function prWordCloudHTML(responses,compact=false){
  return html;
 }
 function prWordParticipantHTML(step,open){
- const submitted=step.myAnswer!==null&&step.myAnswer!==undefined;
- const resultVisible=Array.isArray(step.responses);
- const showCloud=submitted&&!pr.wordEditing||!open&&resultVisible;
+ const own=prOwnWordIdeas(step.myAnswer),count=own.length,max=Number(step.context?.maxEntries||25);
+ const visible=Array.isArray(step.responses);
  let html='<p class="pr-eyebrow">EBENE 3 · GERECHTIGKEIT · IDEENSAMMLUNG</p><h2>'+prEscape(step.title)+'</h2>';
  html+='<div class="pr-lena-case"><span class="pr-eyebrow">DER FALL WIRD VORN AUF DER FOLIE GEZEIGT</span><p>'+prEscape(step.context?.case||"")+'</p></div>';
  html+='<h3 class="pr-word-question">'+prEscape(step.prompt)+'</h3>';
- if(showCloud){
-  if(submitted)html+='<div class="pr-note-bubble"><strong>Deine Idee:</strong> '+prEscape(step.myAnswer?.value||"")+'</div>';
-  html+='<div class="pr-word-results"><div class="pr-live-head"><div><p class="pr-eyebrow">IDEEN AUS DEM PLENUM</p><h3>Unsere Wörterwolke.</h3></div><span class="pr-live-badge"><i></i> LIVE</span></div>'+prWordCloudHTML(step.responses)+'</div>';
-  if(open&&submitted)html+='<div class="pr-actions">'+prButton("Idee ändern","word-edit","ghost")+'<span class="pr-muted">Bis zum Schließen der Frage möglich.</span></div>';
-  if(step.phase==='revealed'&&step.explanation)html+='<div class="pr-note-bubble">'+prEscape(step.explanation)+'</div>';
- }else if(open){
+ if(open&&count<max){
   const idea=prWordIdeaCheck(pr.ideaDraft);
-  html+='<div class="pr-word-editor"><label for="prWordIdea">DEINE IDEE IN 2–3 WORTEN</label>'+
-    '<input id="prWordIdea" type="text" maxlength="70" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="'+prEscape(step.context?.placeholder||"Antwort in 2–3 Worten")+'" value="'+prEscape(pr.ideaDraft||"")+'" aria-describedby="prWordHint">'+
-    '<p class="pr-note" id="prWordHint">'+idea.words+' / 2–3 Wörter · '+idea.text.length+' / 70 Zeichen</p>'+
-    '<div class="pr-actions"><button type="button" class="primary" data-pr="submit">'+(submitted?'Idee aktualisieren ↗':'Idee abschicken ↗')+'</button></div>'+
-    '<p class="pr-note">Eine kurze Formulierung genügt. Du kannst deine Idee bis zum Abstimmungsschluss verändern.</p></div>';
+  html+='<div class="pr-word-editor"><label for="prWordIdea">NEUE IDEE HINZUFÜGEN</label>'+
+   '<input id="prWordIdea" type="text" maxlength="100" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="'+prEscape(step.context?.placeholder||"Ein Begriff oder kurzer Satz")+'" value="'+prEscape(pr.ideaDraft||"")+'" aria-describedby="prWordHint">'+
+   '<p class="pr-note" id="prWordHint">'+idea.text.length+' / 100 Zeichen · Ein Wort oder mehrere Wörter möglich</p>'+
+   '<div class="pr-actions"><button type="button" class="primary" data-pr="submit">+ Idee hinzufügen</button>'+
+   '<span class="pr-muted">Du kannst mehrere unterschiedliche Ideen nacheinander eintragen.</span></div></div>';
+ }else if(open){
+  html+='<div class="pr-note-bubble">Du hast bereits '+max+' Ideen eingereicht. Deine bisherigen Beiträge bleiben sichtbar.</div>';
  }else{
-  html+='<div class="pr-note-bubble">Die Eingabe ist geschlossen. '+(step.phase==='closed'?'Die Moderation wird die gesammelten Ideen freigeben.':'Warte auf die Freigabe der Wörterwolke.')+'</div>';
+  html+='<div class="pr-note-bubble">Die Eingabe wurde von der Moderation geschlossen.</div>';
  }
+ if(count)html+='<div class="pr-word-owned"><div class="pr-word-owned-header"><strong>Deine bisherigen Ideen</strong><span>'+count+' / '+max+'</span></div>'+
+  '<div class="pr-word-owned-list">'+own.map((item,i)=>'<span class="pr-word-owned-item"><small>'+(i+1)+'.</small> '+prEscape(item)+'</span>').join("")+'</div></div>';
+ if(visible){
+  html+='<div class="pr-word-results"><div class="pr-live-head"><div><p class="pr-eyebrow">IDEEN AUS DEM PLENUM</p><h3>Unsere Wörterwolke.</h3></div><span class="pr-live-badge"><i></i> LIVE</span></div>'+
+  '<div id="prWordCloudLive">'+prWordCloudHTML(step.responses)+'</div></div>';
+ }else if(!count){
+  html+='<p class="pr-note">Sobald du deine erste Idee absendest, siehst du die gemeinsamen Ergebnisse live.</p>';
+ }
+ if(step.phase==='revealed'&&step.explanation)html+='<div class="pr-note-bubble">'+prEscape(step.explanation)+'</div>';
  return html;
 }
-
 function prResultRows(step,responses){
  if(!Array.isArray(responses)||!responses.length)return '<p class="pr-note">Noch keine Antworten. Die Werte erscheinen nach Eingang der Stimmen.</p>';
  if(step.kind==="wordcloud")return prWordCloudHTML(responses);
@@ -271,7 +283,7 @@ function prHistoryHTML(){
  if(!history.length)return "";
  return '<h3>Bereits freigegebene Ergebnisse</h3><div class="pr-history-grid">'+history.map(x=>{
   const rows=x.responses||[],kind=x.kind;
-  let summary=rows.length+" Antworten";
+  let summary=kind==='wordcloud'?prWordCloudEntries(rows).length+" Ideen von "+rows.length+" Personen":rows.length+" Antworten";
   if(kind==='boolean'&&x.solution&&typeof x.solution.correct==='boolean'){
    const correct=rows.filter(r=>r.answer?.value===x.solution.correct).length;
    summary+=" · "+Math.round(correct/Math.max(1,rows.length)*100)+" % korrekt";
@@ -309,9 +321,12 @@ function prShowParticipant(){
  if(mine&&step.kind==='benefits'&&!pr.localEdited){pr.items=Array.isArray(mine.items)?[...mine.items]:[];pr.cash=Number(mine.cash||0)}
  const open=step.phase==='voting'&&!(step.kind==='benefits'&&prSecondsLeft()===0);
  if(step.kind==='wordcloud'){
-  // Avoid destroying a focused text field on each live refresh.
-  if(open&&document.activeElement?.id==='prWordIdea'&&pr.wordViewStep===step.id&&pr.wordViewPhase===step.phase&&(!step.myAnswer||pr.wordEditing))return;
-  if(step.myAnswer&&!pr.wordEditing)pr.ideaDraft=step.myAnswer.value||"";
+  // Keep the text field focused and update the cloud in place while live polling.
+  if(open&&document.activeElement?.id==='prWordIdea'&&pr.wordViewStep===step.id&&pr.wordViewPhase===step.phase){
+   const liveCloud=pr$("prWordCloudLive");
+   if(liveCloud&&Array.isArray(step.responses))liveCloud.innerHTML=prWordCloudHTML(step.responses);
+   return;
+  }
   pr$("prCurrent").innerHTML=prWordParticipantHTML(step,open);
   pr.wordViewStep=step.id;pr.wordViewPhase=step.phase;
   pr$("prResultHistory").innerHTML=prHistoryHTML();
@@ -369,8 +384,9 @@ function prAdminSteps(){
  const status=Object.fromEntries((a.states||[]).map(s=>[s.id,s.phase]));
  pr$("prAdminChapterTitle").textContent=PR_CHAPTERS[a.chapter].name;
  pr$("prAdminSteps").innerHTML=steps.map(s=>{
-  const count=(a.votes?.[s.id]||[]).length;
-  return '<div class="pr-step"><div><small>FRAGE '+s.seq+' · '+prEscape(status[s.id]||"Bereit")+'</small><h4>'+prEscape(s.title)+'</h4><small>'+count+' gültige Stimmen</small></div>'+
+  const responseList=a.votes?.[s.id]||[],count=responseList.length;
+  const countText=s.kind==='wordcloud'?prWordCloudEntries(responseList).length+' Ideen von '+count+' Personen':count+' gültige Stimmen';
+  return '<div class="pr-step"><div><small>FRAGE '+s.seq+' · '+prEscape(status[s.id]||"Bereit")+'</small><h4>'+prEscape(s.title)+'</h4><small>'+countText+'</small></div>'+
    prButton(a.activeStep===s.id?"Aktiv":"Starten","step","ghost small",'data-step="'+prEscape(s.id)+'" '+(a.status!=='active'?'disabled':''))+'</div>';
  }).join('');
 }
@@ -380,7 +396,8 @@ function prAdminLive(){
  let html='<p class="pr-muted">'+(step?prEscape(step.prompt):"Kapitel geöffnet. Wähle eine Aufgabe aus der Liste.")+'</p>';
  if(step){
   const responses=a.votes?.[step.id]||[];
-  html+='<div class="pr-facts">'+prStats("Abstimmungsphase",a.phase)+prStats("Gültige Stimmen",responses.length)+'</div>';
+  html+='<div class="pr-facts">'+prStats("Abstimmungsphase",a.phase)+prStats(step.kind==='wordcloud'?"Teilnehmende mit Ideen":"Gültige Stimmen",responses.length)+
+   (step.kind==='wordcloud'?prStats("Eingereichte Ideen",prWordCloudEntries(responses).length):"")+'</div>';
   if(step.kind==='benefits')html+='<div class="pr-note">Benefit-Auswahl: '+prTimerLabel()+'</div>';
   if(a.phase==='voting')html+='<div class="pr-admin-live-actions">'+prButton("Abstimmung schließen","close","primary wide")+'</div>';
   else if(a.phase==='closed')html+='<div class="pr-admin-live-actions">'+prButton("Ergebnisse zeigen","results","primary wide")+(step.chapter===4?"":prButton("Direkt auflösen","reveal","ghost wide"))+'</div>';
@@ -402,7 +419,7 @@ function prAdminLive(){
 }
 function prDashboardCard(step,answers,showSolution){
  let text='<div class="pr-dash-card"><p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+'</p><h3>'+prEscape(step.title)+'</h3>'+
- '<p>'+answers.length+' gültige Antworten</p>'+prResultRows(step,answers);
+ '<p>'+(step.kind==='wordcloud'?prWordCloudEntries(answers).length+' Ideen von '+answers.length+' Personen':answers.length+' gültige Antworten')+'</p>'+prResultRows(step,answers);
  if(showSolution&&step.solution&&step.kind!=='wordcloud'&&step.chapter!==4)text+=prLegalSolution(step);
  return text+'</div>';
 }
@@ -462,7 +479,10 @@ async function prSubmit(){
  let ans;
  if(step.kind==='wordcloud'){
   const idea=prWordIdeaCheck(pr.ideaDraft);
-  if(!idea.valid){prToast("Bitte genau 2–3 Wörter eingeben (maximal 70 Zeichen).");pr$("prWordIdea")?.focus();return}
+  if(!idea.valid){prToast("Bitte einen Begriff oder einen Text mit höchstens 100 Zeichen eingeben.");pr$("prWordIdea")?.focus();return}
+  const previous=prOwnWordIdeas(step.myAnswer);
+  if(previous.length>=Number(step.context?.maxEntries||25)){prToast("Du hast bereits 25 Ideen eingereicht.");return}
+  if(previous.some(v=>v.toLocaleLowerCase("de-DE")===idea.text.toLocaleLowerCase("de-DE"))){prToast("Diese Idee hast du bereits eingereicht.");return}
   ans={value:idea.text};
  }else if(step.kind==='benefits'){ans={items:[...pr.items],cash:Number(pr.cash||0)};
   if(prBudgetTotal(step)>(PR_PERSONAS[pr.public.persona]?.budget||100)){prToast("Budget überschritten");return}
@@ -472,7 +492,9 @@ async function prSubmit(){
   ans={value:n};
  }else{if(pr.choice===null){prToast("Bitte zuerst eine Antwort wählen");return}ans={value:pr.choice}}
  pr.busy=true;
- try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;prToast(step.kind==='wordcloud'?"Deine Idee wurde gespeichert.":"Deine Antwort wurde gespeichert.");await prFetch();if([1,2,4].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
+ try{await prRpc("arb_pr_submit",{p_session:pr.public.sessionId,p_step:step.id,p_device:pr.device,p_answer:ans});pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;
+  if(step.kind==='wordcloud')pr.ideaDraft="";
+  prToast(step.kind==='wordcloud'?"Idee hinzugefügt – du kannst weitere eintragen.":"Deine Antwort wurde gespeichert.");await prFetch();if([1,2,4].includes(step.chapter))pr$("prCurrent")?.scrollIntoView({behavior:"smooth",block:"start"})}
  catch(e){prToast(e.message)}finally{pr.busy=false}
 }
 async function prAdminAction(action,options={}){
@@ -540,7 +562,7 @@ document.addEventListener("input",e=>{
   pr.ideaDraft=e.target.value;
   const idea=prWordIdeaCheck(pr.ideaDraft);
   const hint=pr$("prWordHint");
-  if(hint)hint.textContent=idea.words+" / 2–3 Wörter · "+idea.text.length+" / 70 Zeichen";
+  if(hint)hint.textContent=idea.text.length+" / 100 Zeichen · Ein Wort oder mehrere Wörter möglich";
  }
  if(e.target.id==="prSalarySlider"){prSalaryUpdate(Number(e.target.value))}
 });
