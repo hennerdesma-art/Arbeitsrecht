@@ -219,3 +219,21 @@
 .pr-word-owned-item{max-width:100%;overflow-wrap:anywhere;display:inline-flex;align-items:baseline;gap:6px;background:#e1f4f0;border:1px solid #c9e7e0;color:#126e73;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:650}
 .pr-word-owned-item small{font-size:10px;color:#6a9294}
 @media(max-width:660px){.pr-word-owned{padding:14px}.pr-word-owned-list{gap:7px}}
+
+
+/* Kapitel 5 – combined two-part legal Twist, matching existing NXT cards */
+.pr-twist-double{display:grid;grid-template-columns:1fr;gap:14px;margin:20px 0}
+.pr-twist-question{padding:clamp(16px,2vw,23px);border:1px solid #d6e9e6;border-radius:17px;background:#f7fbfa;min-width:0}
+.pr-twist-question-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pr-twist-question-top .pr-pill{padding:7px 12px}
+.pr-twist-question h3{font:700 clamp(19px,2.25vw,24px)/1.25 "Space Grotesk",sans-serif;letter-spacing:-.04em;margin:13px 0}
+.pr-twist-question .pr-optiongrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 4px}
+.pr-twist-question .pr-option{min-height:80px;padding:15px;overflow-wrap:anywhere}
+.pr-twist-question .pr-option strong{font:650 14px/1.45 "Inter",sans-serif;letter-spacing:0}
+.pr-twist-note{font-size:12px;color:#557782;line-height:1.6;margin:12px 0 18px}
+.pr-twist-results{display:grid;gap:20px}
+.pr-twist-result-question{border:1px solid #deeeeb;background:#f8fcfb;border-radius:14px;padding:16px}
+.pr-twist-result-question h4,.pr-twist-solution-part h4{font:700 17px/1.3 "Space Grotesk",sans-serif;letter-spacing:-.025em;margin:6px 0 16px}
+.pr-twist-solution-part{padding:12px 0;border-bottom:1px solid #d1e9e4}
+.pr-twist-solution-part p{font-size:14px;line-height:1.55}
+@media(max-width:720px){.pr-twist-question .pr-optiongrid{grid-template-columns:1fr}.pr-twist-question{padding:16px}.pr-twist-question .pr-option{min-height:58px}}
