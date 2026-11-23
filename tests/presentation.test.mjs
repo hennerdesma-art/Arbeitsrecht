@@ -11,7 +11,7 @@ for(const id of ["prJoin","prParticipant","prAdmin","prJoinForm","prAdminForm","
 }
 for(const name of ["arb_pr_join","arb_pr_public","arb_pr_submit","arb_pr_admin","arb_pr_clock"])
  assert.ok(code.includes('"'+name+'"'),"Missing Supabase RPC "+name);
-for(const title of ["Einleitung","Rechtssicherheit","Fixgehalt","Gerechtigkeit","Variable Vergütung","Benefits"])
+for(const title of ["Rechtssicherheit","Fixgehalt","Gerechtigkeit","Variable Vergütung","Benefits"])
  assert.ok(code.includes(title),"Missing chapter "+title);
 for(const test of ["data-benefit","prBudgetTotal","data-cash","prSalaryUpdate","prRenderDashboard","prAdminAction","prLiveSalaryHistogram","prInstantFeedbackHTML","review-edit","hasAnswered","liveReview","pr.reviewEditing"])
  assert.ok(code.includes(test),"Missing interaction "+test);
@@ -25,6 +25,9 @@ assert.match(code,/pr\.wordViewPhase===step\.phase/,"Typing must not be interrup
 assert.match(code,/liveCloud\.innerHTML=prWordCloudHTML\(step\.responses\)/,"Live word cloud continues to update while user types");
 assert.match(css,/\.pr-word-cloud/,"NXT responsive word cloud design");
 assert.match(html,/nxt-logo\.svg/);
+assert.match(html,/podium\.js/);assert.match(html,/podium\.css/);
+assert.doesNotMatch(html,/>Sechs Kapitel\.</);
+assert.match(code,/PR_CHAPTERS\.slice\(1\)/);
 assert.match(code,/\[1,2\]\.includes\(step\.chapter\)/,"Instant results are limited to chapters 1 and 2");
 assert.match(code,/step\.myAnswer!==null/,"Require saved vote before showing feedback");
 assert.match(code,/const liveReview=\[1,2\]\.includes\(step\.chapter\)&&hasAnswered&&Array\.isArray\(step\.responses\);/,"Diagram must not require released legal solution");

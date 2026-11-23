@@ -40,7 +40,7 @@ function prSetView(view){
  prRender();window.scrollTo({top:0,behavior:"smooth"});
 }
 function prPyramid(){
- const rows=[...PR_CHAPTERS].reverse();
+ const rows=[...PR_CHAPTERS.slice(1)].reverse();
  return rows.map((c,i)=>{
   const n=5-i,w=59+(i*8.2),fg=n<3?"#fff":"#163943";
   return '<div class="pr-pyramid-row" style="width:'+Math.min(w,100)+'%;margin:auto;background:'+c.color+';color:'+fg+'">'+(n===0?"00":("0"+n))+' · '+prEscape(c.name)+'</div>';
@@ -48,9 +48,9 @@ function prPyramid(){
 }
 function prChapterMenu(){
  const p=pr.public,chapter=p?.chapter??0,opened=p?.openedChapters||[0];
- return PR_CHAPTERS.map((c,i)=>{
-  const unlocked=opened.includes(i),current=chapter===i;
-  return '<div class="pr-chap '+(current?'current ':'')+(!unlocked?'locked':'')+'"><strong>'+String(i).padStart(2,"0")+'</strong><small>'+prEscape(c.short)+'</small></div>';
+ return PR_CHAPTERS.slice(1).map((c,j)=>{
+  const i=j+1,unlocked=opened.includes(i),current=chapter===i;
+  return '<div class="pr-chap '+(current?'current ':'')+(!unlocked?'locked':'')+'"><strong>'+String(j+1).padStart(2,"0")+'</strong><small>'+prEscape(c.short)+'</small></div>';
  }).join("");
 }
 function prStats(label,value){return '<div class="pr-fact"><small>'+prEscape(label)+'</small><strong>'+prEscape(value)+'</strong></div>'}
@@ -455,7 +455,7 @@ function prRenderKpis(){
 }
 function prAdminChapters(){
  const a=pr.admin;
- pr$("prAdminChapters").innerHTML=PR_CHAPTERS.map((c,i)=>'<button type="button" data-admin-chapter="'+i+'" class="pr-admin-chapter '+(a.chapter===i?'is-active':'')+'"><strong class="pr-number">'+String(i).padStart(2,"0")+'</strong><span>'+prEscape(c.name)+'<small style="display:block;font-weight:400;margin-top:5px">'+prEscape(c.subtitle)+'</small></span></button>').join("");
+ pr$("prAdminChapters").innerHTML=PR_CHAPTERS.slice(1).map((c,j)=>'<button type="button" data-admin-chapter="'+(j+1)+'" class="pr-admin-chapter '+(a.chapter===i?'is-active':'')+'"><strong class="pr-number">'+String(i).padStart(2,"0")+'</strong><span>'+prEscape(c.name)+'<small style="display:block;font-weight:400;margin-top:5px">'+prEscape(c.subtitle)+'</small></span></button>').join("");
  pr$("prAdminSessionTag").textContent=(a.isDemo?"Demo · ":"Live · ")+a.sessionLabel;
 }
 function prAdminSteps(){
@@ -506,7 +506,7 @@ function prDashboardCard(step,answers,showSolution){
 function prRenderDashboard(){
  const a=pr.admin,chapter=pr.adminDashboard;
  const steps=(a.steps||[]).filter(s=>s.chapter===chapter).sort((x,y)=>x.seq-y.seq),statuses=Object.fromEntries((a.states||[]).map(s=>[s.id,s.phase]));
- const switcher='<div class="pr-dash-actions">'+PR_CHAPTERS.map((c,i)=>prButton(String(i).padStart(2,"0")+' · '+c.name,'dashboard','ghost small '+(chapter===i?'active':''),'data-chapter="'+i+'"')).join("")+'</div>';
+ const switcher='<div class="pr-dash-actions">'+PR_CHAPTERS.slice(1).map((c,j)=>prButton(String(j+1).padStart(2,"0")+' · '+c.name,'dashboard','ghost small '+(chapter===j+1?'active':''),'data-chapter="'+(j+1)+'"')).join("")+'</div>';
  const results=steps.map(s=>prDashboardCard(s,a.votes?.[s.id]||[],statuses[s.id]==='revealed')).join("");
  const html=switcher+'<div class="pr-dash-layout">'+results+'</div>';
  pr$("prDashboard").innerHTML=html;
