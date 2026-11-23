@@ -455,7 +455,7 @@ function prRenderKpis(){
 }
 function prAdminChapters(){
  const a=pr.admin;
- pr$("prAdminChapters").innerHTML=PR_CHAPTERS.slice(1).map((c,j)=>'<button type="button" data-admin-chapter="'+(j+1)+'" class="pr-admin-chapter '+(a.chapter===i?'is-active':'')+'"><strong class="pr-number">'+String(i).padStart(2,"0")+'</strong><span>'+prEscape(c.name)+'<small style="display:block;font-weight:400;margin-top:5px">'+prEscape(c.subtitle)+'</small></span></button>').join("");
+ pr$("prAdminChapters").innerHTML=PR_CHAPTERS.slice(1).map((c,j)=>'<button type="button" data-admin-chapter="'+(j+1)+'" class="pr-admin-chapter '+(a.chapter===j+1?'is-active':'')+'"><strong class="pr-number">'+String(j+1).padStart(2,"0")+'</strong><span>'+prEscape(c.name)+'<small style="display:block;font-weight:400;margin-top:5px">'+prEscape(c.subtitle)+'</small></span></button>').join("");
  pr$("prAdminSessionTag").textContent=(a.isDemo?"Demo · ":"Live · ")+a.sessionLabel;
 }
 function prAdminSteps(){
