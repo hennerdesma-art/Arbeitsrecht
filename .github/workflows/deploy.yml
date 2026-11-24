@@ -23,6 +23,7 @@ jobs:
         run: |
           node tests/workshop.test.mjs
           node tests/presentation.test.mjs
+          node tests/cafeteria.test.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static website

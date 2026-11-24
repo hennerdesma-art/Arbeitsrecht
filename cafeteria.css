@@ -1,0 +1,56 @@
+/* NXT Cafeteria | turquoise, dark teal, high-contrast controls */
+.pr-cafe-denominator{font-size:12px;color:#5d7e88;margin:0 0 17px;line-height:1.5}
+.pr-cafe-empty{background:#eef8f5;border:1px dashed #bcded8;border-radius:12px;padding:22px;color:#3a6970}
+.pr-cafe-budget-warning{border:1px solid #f3cb8c;border-left:5px solid #e68f27;background:#fff7e8;border-radius:12px;padding:13px 16px;color:#63451b;font-size:13px;line-height:1.45;margin:12px 0 18px}
+.pr-cafe-dashboard{padding:clamp(15px,2vw,24px);background:#f6fbfa;border:1px solid #cde6e2;border-radius:18px;min-width:0}
+.pr-cafe-dashboard-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.pr-cafe-dashboard-head h3{font:750 clamp(24px,2.8vw,34px)/1.1 "Space Grotesk",sans-serif;letter-spacing:-.05em;color:#153b46;margin:6px 0}
+.pr-cafe-dashboard-head p{font-size:13px;color:#597d85;line-height:1.5;margin:4px 0}
+.pr-cafe-phase{white-space:nowrap;color:#086b70;font-size:11px;font-weight:750;background:#dff5ef;border:1px solid #b2dfd4;border-radius:90px;padding:8px 12px}
+.pr-cafe-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 0 14px}
+.pr-cafe-filters button{border:1px solid #b2d8d5;border-radius:99px;background:white;color:#20535b;font-weight:750;min-height:39px;padding:9px 15px;cursor:pointer;transition:background .2s,transform .2s}
+.pr-cafe-filters button:hover{background:#eaf8f5;transform:translateY(-1px)}
+.pr-cafe-filters button.is-active{background:#006e77;color:white;border-color:#006e77;box-shadow:0 4px 15px #006f763d}
+.pr-cafe-filters button:focus-visible{outline:3px solid #79c9c2;outline-offset:2px}
+.pr-cafe-bars{background:white;border:1px solid #dcece9;border-radius:13px;padding:clamp(12px,2vw,21px)}
+.pr-cafe-bars .pr-result-bar{margin:11px 0 15px}
+.pr-cafe-bars .pr-result-track{height:15px}
+.pr-cafe-bars .pr-result-bar>div:first-child{line-height:1.4;align-items:start}
+.pr-cafe-bars .pr-result-bar>div:first-child>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.pr-cafe-bars .pr-result-bar>div:first-child>strong{white-space:nowrap;flex:none}
+.pr-cafe-instructions{color:#597982;font-size:13px;line-height:1.5;margin:15px 0 0}
+.pr-cafe-tax{border-top:1px solid #cee2de;margin-top:22px;padding-top:17px}
+.pr-cafe-tax h3{font:750 clamp(20px,2.4vw,27px) "Space Grotesk",sans-serif;margin:0 0 6px;color:#194653}
+.pr-cafe-tax>p{font-size:12px;color:#65818a;line-height:1.5}
+.pr-cafe-taxgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:9px;margin-top:12px}
+.pr-cafe-taxitem{display:grid;gap:7px;border-radius:12px;background:white;border:1px solid #dce9e6;padding:13px;min-width:0;overflow-wrap:anywhere}
+.pr-cafe-taxitem strong{font-size:12px;color:#1f535c}
+.pr-cafe-taxitem span{font-size:11px;color:#62808a;line-height:1.5}
+.pr-cafe-comparison{background:linear-gradient(140deg,#063f4b,#007e81);color:white;margin-top:21px;padding:clamp(17px,2.5vw,25px);border-radius:16px}
+.pr-cafe-comparison .pr-eyebrow{color:#98ede2}
+.pr-cafe-comparison h3{color:white;font:760 clamp(20px,2.4vw,29px) "Space Grotesk";margin:6px 0 16px}
+.pr-cafe-comparison-numbers{display:flex;align-items:center;justify-content:space-around;gap:10px;margin:12px 0 17px}
+.pr-cafe-comparison-numbers span{display:grid;gap:4px;color:#d4f5ed}
+.pr-cafe-comparison-numbers strong{color:white;font:780 clamp(22px,3vw,34px) "Space Grotesk"}
+.pr-cafe-comparison-numbers small{font-size:11px;color:#d1eeec}
+.pr-cafe-comparison p{color:#e2f8f5;font-size:13px;line-height:1.65}
+.pr-cafe-comparison>small{color:#b7e0df;font-size:11px;line-height:1.5}
+.pr-cafe-personal{border-radius:17px;padding:clamp(17px,3vw,25px);background:#f6fbf9;color:#1c4854}
+.pr-cafe-personal h2{font:800 clamp(25px,3vw,36px) "Space Grotesk";letter-spacing:-.04em;color:#173f46}
+.pr-cafe-value{background:linear-gradient(125deg,#054c55,#009296);border-radius:17px;padding:23px;color:white;display:grid;gap:7px}
+.pr-cafe-value small{color:#c0eee6;font-size:12px}
+.pr-cafe-value strong{font:800 clamp(37px,5vw,60px) "Space Grotesk",sans-serif;color:white}
+.pr-cafe-value span{color:#d6efec;font-size:12px}
+.pr-cafe-personal ul{list-style:none;margin:17px 0;padding:0;display:grid;gap:7px}
+.pr-cafe-personal li{display:flex;justify-content:space-between;gap:10px;padding:12px;background:white;border:1px solid #deebe8;border-radius:11px;font-size:13px;line-height:1.5}
+.pr-cafe-personal li strong{white-space:nowrap}
+.pr-cafe-remainder{font-size:13px;color:#6a7780;margin:12px 0}
+.pr-cafe-salary{display:grid;gap:7px;border-radius:14px;border:1px solid #b7d7cc;background:#e4f5ef;padding:15px;margin:17px 0}
+.pr-cafe-salary strong{font-size:14px;color:#155b57;line-height:1.5}
+.pr-cafe-salary span{font-size:12px;color:#376b67;line-height:1.5}
+.pr-cafe-legal{border:1px solid #c4dfd8;border-radius:12px;padding:15px;background:white;margin-top:15px}
+.pr-cafe-legal summary{cursor:pointer;font-weight:750;color:#215861}
+.pr-cafe-legal p{font-size:12px;color:#5d7d84;line-height:1.5}
+.pr-cafe-followup{background:#fff7e7;border:1px solid #e9cea4;border-left:4px solid #df8c29;border-radius:11px;color:#65471c;font-size:14px;line-height:1.55;padding:14px 16px;margin:16px 0}
+@media(max-width:700px){.pr-cafe-dashboard{padding:13px}.pr-cafe-filters button{flex:1;min-width:75px}.pr-cafe-comparison-numbers{flex-direction:column;text-align:center}.pr-cafe-taxgrid{grid-template-columns:1fr}.pr-cafe-personal li{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.pr-cafe-filters button{transition:none}.pr-cafe-filters button:hover{transform:none}}

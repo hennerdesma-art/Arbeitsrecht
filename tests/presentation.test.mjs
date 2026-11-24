@@ -13,7 +13,7 @@ for(const name of ["arb_pr_join","arb_pr_public","arb_pr_submit","arb_pr_admin",
  assert.ok(code.includes('"'+name+'"'),"Missing Supabase RPC "+name);
 for(const title of ["Rechtssicherheit","Fixgehalt","Gerechtigkeit","Variable Vergütung","Benefits"])
  assert.ok(code.includes(title),"Missing chapter "+title);
-for(const test of ["data-benefit","prBudgetTotal","data-cash","prSalaryUpdate","prRenderDashboard","prAdminAction","prLiveSalaryHistogram","prInstantFeedbackHTML","review-edit","hasAnswered","liveReview","pr.reviewEditing"])
+for(const test of ["data-benefit","prBudgetTotal","prSalaryUpdate","prRenderDashboard","prAdminAction","prLiveSalaryHistogram","prInstantFeedbackHTML","review-edit","hasAnswered","liveReview","pr.reviewEditing"])
  assert.ok(code.includes(test),"Missing interaction "+test);
 for(const design of ["#008b93","#0d2832",".pr-benefit",".pr-dash-card",".pr-live-feedback",".pr-live-hist"])
  assert.ok(css.includes(design),"Missing NXT design "+design);
@@ -26,6 +26,9 @@ assert.match(code,/liveCloud\.innerHTML=prWordCloudHTML\(step\.responses\)/,"Liv
 assert.match(css,/\.pr-word-cloud/,"NXT responsive word cloud design");
 assert.match(html,/nxt-logo\.svg/);
 assert.match(html,/podium\.js/);assert.match(html,/podium\.css/);
+assert.match(html,/cafeteria\.js/);assert.match(html,/cafeteria\.css/);
+assert.doesNotMatch(code,/data-cash|prCashStep|Barauszahlung/,"No cash feature in Cafeteria frontend");
+assert.match(code,/prCafeteriaDashboard/);assert.match(code,/prCafeteriaMobileResult/);
 assert.doesNotMatch(html,/>Sechs Kapitel\.</);
 assert.match(code,/PR_CHAPTERS\.slice\(1\)/);
 assert.match(code,/\[1,2\]\.includes\(step\.chapter\)/,"Instant results are limited to chapters 1 and 2");

@@ -11,16 +11,16 @@ const PR_CHAPTERS=[
  {name:"Benefits",short:"Benefits",subtitle:"Cafeteria · Rechts-Twists",color:"#bfd9d2"}
 ];
 const PR_PERSONAS={
- lena:{name:"Lena",age:27,info:"Teilzeit, 20 h · pendelt mit der Bahn",budget:50},
- murat:{name:"Murat",age:38,info:"Vollzeit · zwei Kinder (3 und 5)",budget:100},
- sabine:{name:"Sabine",age:58,info:"Vollzeit · Altersvorsorge und Rückenprobleme",budget:100},
- jonas:{name:"Jonas",age:24,info:"Berufseinsteiger · Fahrrad und Weiterbildung",budget:100}
+ mia:{name:"Mia",age:27,info:"Teilzeit · 20 h/Woche · tägliche Bahnpendlerin · berufsbegleitender Master · achtet auf ihre Ausgaben",budget:50},
+ murat:{name:"Murat",age:38,info:"Vollzeit · zwei Kinder (3 und 5) in der Kita · Bahnpendler · Rückenprobleme",budget:100},
+ sabine:{name:"Sabine",age:58,info:"Vollzeit · denkt an die Rente · Rückenprobleme · wünscht sich mehr Freizeit",budget:100},
+ tim:{name:"Tim",age:24,info:"Berufseinsteiger · fährt Rad · technikaffin · möchte sich weiterbilden",budget:100}
 };
 const pr$=id=>document.getElementById(id);
 const pr={
  name:localStorage.getItem("nxt_name")||"",device:localStorage.getItem("nxt_device")||"",
  password:sessionStorage.getItem("nxt_admin")||"",view:"join",public:null,admin:null,clock:null,
- adminChapter:0,adminDashboard:0,busy:false,polling:false,choice:null,dualChoice:{q1:null,q2:null},salary:null,items:[],cash:0,
+ adminChapter:1,adminDashboard:1,busy:false,polling:false,choice:null,dualChoice:{q1:null,q2:null},salary:null,items:[],
  stepId:null,overlay:false,lastError:"",joinedSession:null,reviewEditing:false,wordEditing:false,ideaDraft:""
 };
 if(!pr.device){pr.device=crypto.randomUUID();localStorage.setItem("nxt_device",pr.device)}
@@ -61,7 +61,7 @@ function prPersonaHTML(){
 }
 function prBudgetItems(step){return Array.isArray(step?.context?.catalog)?step.context.catalog:[]}
 function prBudgetTotal(step){
- return prBudgetItems(step).reduce((sum,b)=>sum+(pr.items.includes(b.id)?Number(b.cost):0),0)+Number(pr.cash||0);
+ return prBudgetItems(step).reduce((sum,b)=>sum+(pr.items.includes(b.id)?Number(b.cost):0),0);
 }
 function prBudgetHTML(step,readonly=false){
  const persona=PR_PERSONAS[pr.public?.persona],max=persona?.budget||100,total=prBudgetTotal(step),remain=Math.max(0,max-total);
@@ -72,7 +72,7 @@ function prBudgetHTML(step,readonly=false){
   const selected=pr.items.includes(b.id),affordable=selected||Number(b.cost)<=remain;
   return '<button class="pr-benefit '+(selected?'selected':'')+'" data-benefit="'+prEscape(b.id)+'" type="button" '+(readonly||!affordable?'disabled':'')+' aria-pressed="'+selected+'"><span class="pr-benefit-icon">'+prEscape(b.icon)+'</span><strong>'+prEscape(b.label)+'</strong><small>'+prEuro(b.cost)+' / Monat'+(!affordable?" · Budget reicht nicht":"")+'</small></button>';
  }).join("")+'</div>';
- txt+='<div class="pr-card pr-small" style="background:#f5fbfa;box-shadow:none"><strong>💶 Barauszahlung</strong><p class="pr-muted">Optional: 10–100 €, nur in 10-€-Schritten und innerhalb des Budgets.</p><div class="pr-salary-input"><button type="button" class="ghost small" data-cash="-10" '+(readonly||pr.cash<=0?'disabled':'')+'>− 10 €</button><strong>'+prEuro(pr.cash)+'</strong><button type="button" class="ghost small" data-cash="10" '+(readonly||pr.cash>=100||remain<10?'disabled':'')+'>+ 10 €</button></div></div>';
+ if(remain>0&&!readonly)txt+='<div class="pr-cafe-budget-warning" role="status" aria-live="polite"><strong>Restbudget verfällt:</strong> '+prEuro(remain)+' werden beim Abschicken nicht ausgezahlt oder übertragen.</div>';
  return txt;
 }
 
@@ -197,12 +197,7 @@ function prResultRows(step,responses){
     prBars(options,responses.length,false)+'</div>';
   }).join("")+'</div>';
  }
- if(step.kind==="benefits"){
-  const cat=prBudgetItems(step), total=responses.length;
-  let choices=cat.map(b=>({label:b.label,count:responses.filter(r=>Array.isArray(r.answer?.items)&&r.answer.items.includes(b.id)).length}));
-  choices.push({label:"Barauszahlung",count:responses.filter(r=>Number(r.answer?.cash)>0).length});
-  return prBars(choices,total,true);
- }
+ if(step.kind==="benefits")return prCafeteriaBarRows(step,responses,"alle");
  if(step.kind==='salary'){
   const values=responses.map(r=>Number(r.answer?.value)).filter(Number.isFinite).sort((a,b)=>a-b);
   if(!values.length)return '<p class="pr-note">Noch keine gültigen Gehaltswerte.</p>';
@@ -344,6 +339,7 @@ function prLegalSolution(step){
  else if(step.kind==='salary')label=s.minimum?"Rechtliche Untergrenze: "+prEuro(s.minimum):s.recommendedMin?"Fachlich begründeter Bereich: "+prEuro(s.recommendedMin)+" – "+prEuro(s.recommendedMax):"Stellenbewertung prüfen";
  else label="Individuelle Benefit-Wahl";
  return '<div class="pr-answerbox"><p class="pr-eyebrow">AUFLÖSUNG UND RECHTLICHE EINORDNUNG</p><h3>'+prEscape(label)+'</h3><p>'+prEscape(step.explanation||"")+'</p>'+
+ (step.id==='benefit-parttime-v2'&&step.context?.followUp?'<div class="pr-cafe-followup"><strong>Nachfrage:</strong> '+prEscape(step.context.followUp)+'</div>':'')+
  (Array.isArray(step.sources)&&step.sources.length?'<div class="pr-note"><strong>Rechtsgrundlagen:</strong> '+step.sources.map(prEscape).join(' · ')+'</div>':'')+'</div>';
 }
 function prHistoryHTML(){
@@ -371,7 +367,7 @@ function prShowParticipant(){
  if(!p)return;
  pr$("prName").textContent=pr.name||p.name||"du";
  pr$("prSessionName").textContent=p.sessionLabel||"";
- pr$("prStatus").textContent=(p.chapter===5&&["choice","dual_choice"].includes(p.step?.kind)&&p.step?.myAnswer?"✓ Live-Ergebnisse verfügbar":p.chapter===4&&p.step?.kind==="boolean"&&p.step?.myAnswer?"✓ Fall ausgewertet · Live-Ergebnis":p.chapter===3&&p.step?.kind==="wordcloud"&&p.step?.myAnswer?"✓ Idee abgegeben · Live-Wörterwolke":p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
+ pr$("prStatus").textContent=(p.chapter===5&&["choice","dual_choice"].includes(p.step?.kind)&&p.step?.myAnswer?(['results','revealed'].includes(p.phase)?"✓ Ergebnis freigegeben":"✓ Antwort gespeichert"):p.chapter===4&&p.step?.kind==="boolean"&&p.step?.myAnswer?"✓ Fall ausgewertet · Live-Ergebnis":p.chapter===3&&p.step?.kind==="wordcloud"&&p.step?.myAnswer?"✓ Idee abgegeben · Live-Wörterwolke":p.phase==="revealed"?"✓ Auflösung freigegeben":[1,2].includes(p.chapter)&&p.step?.myAnswer?"✓ Live-Diagramm aktiv":p.phase==="voting"?"● Abstimmung läuft":p.phase==="results"?"Ergebnisse freigegeben":p.phase==="revealed"?"Auflösung verfügbar":p.phase==="chapter_results"?"Kapitelübersicht":"Warten auf Moderation");
  pr$("prChapterNav").innerHTML=prChapterMenu();
  const c=PR_CHAPTERS[p.chapter??0];
  pr$("prChapterDetail").innerHTML='<div class="pr-chap current"><strong>'+String(p.chapter??0).padStart(2,"0")+'</strong><small>'+prEscape(c.name)+'</small></div><p class="pr-chapter-info">'+prEscape(c.subtitle)+'. Die Moderation öffnet alle Aufgaben nacheinander.</p>';
@@ -383,14 +379,14 @@ function prShowParticipant(){
  }
  if(pr.stepId!==step.id){
   pr.stepId=step.id;pr.choice=null;pr.dualChoice={q1:null,q2:null};pr.salary=Number(step.context?.default??step.context?.min??0);
-  pr.items=[];pr.cash=0;pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;pr.ideaDraft="";
+  pr.items=[];pr.localEdited=false;pr.reviewEditing=false;pr.wordEditing=false;pr.ideaDraft="";
  }
  const mine=step.myAnswer;
  if(mine&&pr.choice===null&&step.kind==='boolean')pr.choice=mine.value;
  if(mine&&pr.choice===null&&step.kind==='choice')pr.choice=mine.value;
  if(mine&&step.kind==='dual_choice'&&!pr.localEdited)pr.dualChoice={q1:mine.q1??null,q2:mine.q2??null};
  if(mine&&step.kind==='salary'&&!pr.localEdited)pr.salary=Number(mine.value);
- if(mine&&step.kind==='benefits'&&!pr.localEdited){pr.items=Array.isArray(mine.items)?[...mine.items]:[];pr.cash=Number(mine.cash||0)}
+ if(mine&&step.kind==='benefits'&&!pr.localEdited){pr.items=Array.isArray(mine.items)?[...mine.items]:[]}
  const open=step.phase==='voting'&&!(step.kind==='benefits'&&prSecondsLeft()===0);
  if(step.kind==='wordcloud'){
   // Keep the text field focused and update the cloud in place while live polling.
@@ -411,6 +407,10 @@ function prShowParticipant(){
   pr$("prCurrent").innerHTML='<p class="pr-eyebrow">KAPITEL 05 · RECHTS-TWIST '+(step.seq-1)+' / 3</p><h2>'+prEscape(step.title)+'</h2>'+prTwistLiveFeedbackHTML(step);
   pr$("prResultHistory").innerHTML=prHistoryHTML();
   return;
+ }
+ if(step.kind==='benefits'&&['results','revealed'].includes(step.phase)){
+  pr$("prCurrent").innerHTML=prCafeteriaMobileResult(step);
+  pr$("prResultHistory").innerHTML=prHistoryHTML();return;
  }
  const bonusFeedback=step.chapter===4&&step.kind==='boolean'&&hasAnswered&&Array.isArray(step.responses)&&typeof step.solution?.correct==='boolean';
  if(bonusFeedback&&(!pr.reviewEditing||!open)){
@@ -481,8 +481,10 @@ function prAdminLive(){
   if(step.kind==='benefits')html+='<div class="pr-note">Benefit-Auswahl: '+prTimerLabel()+'</div>';
   if(a.phase==='voting')html+='<div class="pr-admin-live-actions">'+prButton("Abstimmung schließen","close","primary wide")+'</div>';
   else if(a.phase==='closed')html+='<div class="pr-admin-live-actions">'+prButton("Ergebnisse zeigen","results","primary wide")+(step.chapter===4?"":prButton("Direkt auflösen","reveal","ghost wide"))+'</div>';
-  else if(a.phase==='results'&&step.chapter!==4)html+='<div class="pr-admin-live-actions">'+prButton("Juristische Lösung zeigen","reveal","primary wide")+'</div>';
-  if(step.kind==='wordcloud'){
+  else if(a.phase==='results'&&step.chapter!==4)html+='<div class="pr-admin-live-actions">'+prButton(step.kind==='benefits'?"Steuerinfos & Gehaltsvergleich zeigen":"Juristische Lösung zeigen","reveal","primary wide")+'</div>';
+  if(step.kind==='benefits'){
+   if(a.phase==='results'||a.phase==='revealed')html+='<div class="pr-admin-wordcloud">'+prCafeteriaDashboard(step,responses,a.phase==='revealed')+'</div>';
+  }else if(step.kind==='wordcloud'){
    html+='<div class="pr-admin-wordcloud"><p class="pr-eyebrow">LIVE · WÖRTERWOLKE</p>'+prWordCloudHTML(responses,true)+'</div>';
    if(a.phase==='revealed')html+='<p class="pr-note-bubble">'+prEscape(step.explanation||"")+'</p>';
   }else if(step.chapter===4&&step.kind==='boolean'){
@@ -497,17 +499,21 @@ function prAdminLive(){
  prButton("Wartebildschirm","wait","ghost wide",a.phase==='voting'?'disabled':'')+'</div>';
  pr$("prAdminLive").innerHTML=html;
 }
-function prDashboardCard(step,answers,showSolution){
- let text='<div class="pr-dash-card"><p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+'</p><h3>'+prEscape(step.title)+'</h3>'+
- '<p>'+(step.kind==='wordcloud'?prWordCloudEntries(answers).length+' Ideen von '+answers.length+' Personen':answers.length+' gültige Antworten')+'</p>'+prResultRows(step,answers);
- if(showSolution&&step.solution&&step.kind!=='wordcloud'&&step.chapter!==4)text+=prLegalSolution(step);
+function prDashboardCard(step,answers,showSolution,phase){
+ let text='<div class="pr-dash-card"><p class="pr-eyebrow">KAPITEL '+String(step.chapter).padStart(2,"0")+' · FRAGE '+step.seq+'</p><h3>'+prEscape(step.title)+'</h3>';
+ if(step.chapter===5&&['benefits','choice','dual_choice'].includes(step.kind)&&!['results','revealed'].includes(phase)){
+  return text+'<p class="pr-note">Die Stimmverteilung erscheint nach Ende der Abstimmung. Die Auflösung folgt ausschließlich nach Freigabe durch die Moderation.</p></div>';
+ }
+ text+='<p>'+(step.kind==='wordcloud'?prWordCloudEntries(answers).length+' Ideen von '+answers.length+' Personen':answers.length+' gültige Antworten')+'</p>'+
+ (step.kind==='benefits'?prCafeteriaDashboard(step,answers,showSolution):prResultRows(step,answers));
+ if(showSolution&&step.solution&&step.kind!=='wordcloud'&&step.kind!=='benefits'&&step.chapter!==4)text+=prLegalSolution(step);
  return text+'</div>';
 }
 function prRenderDashboard(){
  const a=pr.admin,chapter=pr.adminDashboard;
  const steps=(a.steps||[]).filter(s=>s.chapter===chapter).sort((x,y)=>x.seq-y.seq),statuses=Object.fromEntries((a.states||[]).map(s=>[s.id,s.phase]));
  const switcher='<div class="pr-dash-actions">'+PR_CHAPTERS.slice(1).map((c,j)=>prButton(String(j+1).padStart(2,"0")+' · '+c.name,'dashboard','ghost small '+(chapter===j+1?'active':''),'data-chapter="'+(j+1)+'"')).join("")+'</div>';
- const results=steps.map(s=>prDashboardCard(s,a.votes?.[s.id]||[],statuses[s.id]==='revealed')).join("");
+ const results=steps.map(s=>prDashboardCard(s,a.votes?.[s.id]||[],statuses[s.id]==='revealed',statuses[s.id])).join("");
  const html=switcher+'<div class="pr-dash-layout">'+results+'</div>';
  pr$("prDashboard").innerHTML=html;
  pr$("prOverlayContent").innerHTML='<div class="pr-kpis">'+[['Kapitel',String(chapter).padStart(2,"0")],['Teilnehmer',a.participants||0],['Aufgaben',steps.length]].map(([l,v])=>'<div class="pr-kpi"><small>'+l+'</small><strong>'+v+'</strong></div>').join('')+'</div>'+switcher+'<div class="pr-dash-layout">'+results+'</div>';
@@ -571,7 +577,7 @@ async function prSubmit(){
   if(previous.length>=Number(step.context?.maxEntries||25)){prToast("Du hast bereits 25 Ideen eingereicht.");return}
   if(previous.some(v=>v.toLocaleLowerCase("de-DE")===idea.text.toLocaleLowerCase("de-DE"))){prToast("Diese Idee hast du bereits eingereicht.");return}
   ans={value:idea.text};
- }else if(step.kind==='benefits'){ans={items:[...pr.items],cash:Number(pr.cash||0)};
+ }else if(step.kind==='benefits'){ans={items:[...pr.items]};
   if(prBudgetTotal(step)>(PR_PERSONAS[pr.public.persona]?.budget||100)){prToast("Budget überschritten");return}
  }else if(step.kind==='salary'){
   const c=step.context||{},n=Number(pr.salary);
@@ -618,12 +624,6 @@ function prBenefitToggle(id){
  else {prToast("Das Budget reicht für dieses Benefit nicht aus.");return}
  pr.localEdited=true;prShowParticipant();
 }
-function prCashStep(delta){
- const step=pr.public?.step,limit=PR_PERSONAS[pr.public.persona]?.budget||100,other=prBudgetTotal(step)-Number(pr.cash||0);
- const next=Math.max(0,Math.min(100,Number(pr.cash||0)+delta));
- if(other+next>limit){prToast("Das Budget reicht für diese Barauszahlung nicht aus.");return}
- pr.cash=next;pr.localEdited=true;prShowParticipant();
-}
 document.addEventListener("click",async e=>{
  const b=e.target.closest("button");if(!b)return;
  if(b.id==="prAdminToggle"){prSetView("admin");await prFetch();return}
@@ -636,7 +636,13 @@ document.addEventListener("click",async e=>{
  if(b.dataset.dualId!==undefined){prDualClick(b.dataset.dualId,b.dataset.dualChoice);return}
  if(b.dataset.choice!==undefined){prChoiceClick(b.dataset.choice);return}
  if(b.dataset.benefit){prBenefitToggle(b.dataset.benefit);return}
- if(b.dataset.cash){prCashStep(Number(b.dataset.cash));return}
+ if(b.dataset.cafeFilter!==undefined){
+  if(["alle","mia","murat","sabine","tim"].includes(b.dataset.cafeFilter)){
+   pr.cafeFilter=b.dataset.cafeFilter;
+   if(pr.view==="admin")prShowAdmin();
+  }
+  return;
+ }
  if(b.dataset.salaryStep){prSalaryUpdate(Number(pr.salary||0)+Number(b.dataset.salaryStep));return}
  if(b.dataset.adminChapter!==undefined){
   const chapter=Number(b.dataset.adminChapter);
